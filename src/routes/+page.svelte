@@ -1,5 +1,10 @@
 <script>
-	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { session } from '$lib/stores/session.js';
+
+	// Someone already signed in has no use for the welcome page; the layout has
+	// their session by the time this runs.
+	$: if (!$session.loading && $session.user) goto('/library');
 </script>
 
 <svelte:head>

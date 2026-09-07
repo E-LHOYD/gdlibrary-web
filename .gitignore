@@ -31,3 +31,6 @@ dist-ssr
 # SvelteKit
 .svelte-kit
 build
+
+# Vercel
+.vercel

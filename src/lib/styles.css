@@ -1,0 +1,262 @@
+/* The Modernist look from the app's redesign: navy accent, zero corner radius,
+   2px rules, flush-left type. Written once here and imported by the layout, so
+   every page shares it rather than restating it. */
+
+:root {
+	--brand: #033047;
+	--brand-hover: #0a4763;
+	--brand-deep: #022638;
+	--ink: #201e1d;
+	--ground: #f3f2f2;
+	--tint: #d8e2e9;
+	--muted: #6f6e6a;
+	--border: #cccccc;
+	--danger: #b3261e;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background: var(--ground);
+	color: var(--ink);
+	font-family: Archivo, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+a {
+	color: var(--brand);
+}
+
+.page {
+	max-width: 960px;
+	margin: 0 auto;
+	padding: 20px;
+}
+
+.page-title {
+	font-size: 2rem;
+	font-weight: 700;
+	margin: 0 0 24px 0;
+	letter-spacing: -0.01em;
+}
+
+.section-title {
+	font-size: 1.1rem;
+	font-weight: 700;
+	margin: 32px 0 12px 0;
+}
+
+.muted {
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+/* ---------- controls ---------- */
+
+.btn {
+	display: inline-block;
+	height: 48px;
+	padding: 0 20px;
+	border: 2px solid var(--brand);
+	border-radius: 0;
+	background: var(--brand);
+	color: #fff;
+	font-size: 1rem;
+	font-weight: 700;
+	font-family: inherit;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	line-height: 44px;
+}
+
+.btn:hover:not(:disabled) {
+	background: var(--brand-hover);
+	border-color: var(--brand-hover);
+}
+
+.btn.secondary {
+	background: #fff;
+	color: var(--brand);
+}
+
+.btn.secondary:hover:not(:disabled) {
+	background: var(--brand);
+	color: #fff;
+}
+
+.btn:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.btn.block {
+	display: block;
+	width: 100%;
+}
+
+.link-btn {
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--brand);
+	font: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+label.field {
+	display: block;
+	margin-bottom: 16px;
+}
+
+label.field > span {
+	display: block;
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	margin-bottom: 6px;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='search'],
+select,
+textarea {
+	width: 100%;
+	height: 48px;
+	padding: 10px;
+	border: 2px solid var(--ink);
+	border-radius: 0;
+	background: #fff;
+	font-size: 1rem;
+	font-family: inherit;
+	color: var(--ink);
+}
+
+textarea {
+	height: auto;
+}
+
+.row {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+/* ---------- messages ---------- */
+
+.error {
+	border-left: 4px solid var(--brand);
+	background: var(--tint);
+	color: var(--brand-deep);
+	padding: 10px 12px;
+	margin-bottom: 16px;
+	font-size: 0.875rem;
+}
+
+.notice {
+	color: var(--brand);
+	font-size: 0.875rem;
+	margin-bottom: 16px;
+}
+
+/* ---------- book lists ---------- */
+
+.book-list {
+	display: grid;
+	gap: 2px;
+	border: 2px solid var(--ink);
+	background: var(--ink);
+}
+
+.book-item {
+	display: flex;
+	gap: 14px;
+	align-items: flex-start;
+	padding: 14px;
+	background: #fff;
+	text-decoration: none;
+	color: inherit;
+}
+
+.book-item:hover {
+	background: var(--tint);
+}
+
+.book-cover {
+	width: 44px;
+	height: 60px;
+	object-fit: cover;
+	border: 1px solid var(--border);
+	flex-shrink: 0;
+}
+
+.book-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.book-title {
+	font-weight: 700;
+	color: var(--brand);
+	text-transform: capitalize;
+}
+
+.book-author {
+	color: var(--muted);
+	font-size: 0.875rem;
+}
+
+.book-meta {
+	color: var(--muted);
+	font-size: 0.75rem;
+	margin-top: 2px;
+}
+
+.book-percent {
+	font-weight: 700;
+	color: var(--brand);
+	font-size: 0.875rem;
+	white-space: nowrap;
+}
+
+.empty {
+	padding: 24px;
+	background: #fff;
+	border: 2px solid var(--border);
+	color: var(--muted);
+}
+
+/* ---------- chips ---------- */
+
+.chips {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-bottom: 16px;
+}
+
+.chip {
+	padding: 6px 12px;
+	border: 1px solid var(--border);
+	background: #fff;
+	color: var(--brand);
+	font-size: 0.8125rem;
+	font-family: inherit;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.chip.active {
+	background: var(--brand);
+	border-color: var(--brand);
+	color: #fff;
+	font-weight: 700;
+}
