@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { session } from '$lib/stores/session.js';
 	import {
@@ -83,7 +84,9 @@
 						<span class="name">{shelf.name}</span>
 						<span class="muted">{shelf.bookIds?.length || 0} books</span>
 					</a>
-					<button class="link-btn delete" on:click={() => (pendingDelete = shelf)}>Delete</button>
+					<button class="link-btn danger delete" on:click={() => (pendingDelete = shelf)}>
+						<Icon name="trash" />Delete
+					</button>
 				</div>
 			{/each}
 		</div>
@@ -94,7 +97,9 @@
 		{:else}
 			<div class="row">
 				<input type="text" placeholder="Shelf name" bind:value={newShelfName} class="grow" />
-				<button class="btn" on:click={create} disabled={!newShelfName.trim()}>Create</button>
+				<button class="btn" on:click={create} disabled={!newShelfName.trim()}>
+					<Icon name="plus" />Create
+				</button>
 			</div>
 		{/if}
 	{/if}
@@ -107,8 +112,10 @@
 				The shelf is removed. The books stay in the library and keep their reading progress.
 			</p>
 			<div class="row">
-				<button class="btn" on:click={confirmDelete}>Delete shelf</button>
-				<button class="btn secondary" on:click={() => (pendingDelete = null)}>Cancel</button>
+				<button class="btn danger" on:click={confirmDelete}><Icon name="trash" />Delete shelf</button>
+				<button class="btn secondary" on:click={() => (pendingDelete = null)}>
+					<Icon name="x" />Cancel
+				</button>
 			</div>
 		</div>
 	{/if}

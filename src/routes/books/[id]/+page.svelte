@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { doc, getDoc } from 'firebase/firestore';
@@ -146,7 +147,7 @@
 <svelte:head><title>{book?.title ?? 'Book'} · GD-Library</title></svelte:head>
 
 <div class="page">
-	<p class="muted"><a href="/library">← Library</a></p>
+	<p class="muted"><a class="link-btn" href="/library"><Icon name="arrow-left" />Library</a></p>
 
 	{#if loading}
 		<p class="muted">Loading…</p>
@@ -180,11 +181,13 @@
 
 				<div class="row actions">
 					{#if book.fileUrl}
-						<a class="btn" href="/read/{book.id}">Read book</a>
+						<a class="btn" href="/read/{book.id}"><Icon name="book-open" />Read book</a>
 					{:else}
 						<span class="muted">No file uploaded, so this book cannot be opened yet.</span>
 					{/if}
-					<button class="btn secondary" on:click={openShelfPicker}>Add to shelf</button>
+					<button class="btn secondary" on:click={openShelfPicker}>
+						<Icon name="bookmark" />Add to shelf
+					</button>
 				</div>
 			</div>
 		</div>
@@ -212,6 +215,7 @@
 								on:click={() => addTo(shelf)}
 								disabled={pending === shelf.id}
 							>
+								<Icon name="plus" />
 								<span class="shelf-name">{shelf.name}</span>
 								<span class="muted">{count} book{count === 1 ? '' : 's'}</span>
 							</button>
@@ -226,9 +230,11 @@
 
 				<div class="row">
 					<button class="btn" on:click={createAndAdd} disabled={!newShelfName.trim()}>
-						Create and add
+						<Icon name="plus" />Create and add
 					</button>
-					<button class="btn secondary" on:click={() => (showShelfPicker = false)}>Close</button>
+					<button class="btn secondary" on:click={() => (showShelfPicker = false)}>
+						<Icon name="x" />Close
+					</button>
 				</div>
 			</div>
 		{/if}
@@ -240,7 +246,7 @@
 				<h2 class="section-title top" id="result-title">{resultBox.title}</h2>
 				<p class="box-text">{resultBox.text}</p>
 				<div class="row">
-					<button class="btn" on:click={() => (resultBox = null)}>OK</button>
+					<button class="btn" on:click={() => (resultBox = null)}><Icon name="check" />OK</button>
 				</div>
 			</div>
 		{/if}

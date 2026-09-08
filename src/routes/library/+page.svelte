@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { session } from '$lib/stores/session.js';
@@ -37,15 +38,17 @@
 	<form class="search" on:submit|preventDefault={submitSearch}>
 		<input type="search" placeholder="Search title or author" bind:value={searchQuery} />
 		{#if searchQuery}
-			<button type="button" class="btn secondary" on:click={() => (searchQuery = '')}>Clear</button>
-			<button type="submit" class="btn">Search</button>
+			<button type="button" class="btn secondary" on:click={() => (searchQuery = '')}>
+				<Icon name="x" />Clear
+			</button>
+			<button type="submit" class="btn"><Icon name="search" />Search</button>
 		{/if}
 	</form>
 
 	<div class="chips">
-		<a class="chip" href="/subjects">Subjects</a>
-		<a class="chip" href="/browse">Browse all</a>
-		<a class="chip" href="/recommendations">For you</a>
+		<a class="chip" href="/subjects"><Icon name="list" />Subjects</a>
+		<a class="chip" href="/browse"><Icon name="grid" />Browse all</a>
+		<a class="chip" href="/recommendations"><Icon name="star" />For you</a>
 	</div>
 
 	{#if loading}

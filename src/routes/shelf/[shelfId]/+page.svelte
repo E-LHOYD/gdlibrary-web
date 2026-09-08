@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { session } from '$lib/stores/session.js';
@@ -236,7 +237,7 @@
 <svelte:head><title>{shelfName || 'Shelf'} · GD-Library</title></svelte:head>
 
 <div class="page">
-	<p class="muted"><a href="/shelf">My shelf</a></p>
+	<p class="muted"><a class="link-btn" href="/shelf"><Icon name="arrow-left" />My shelf</a></p>
 	<h1 class="page-title">{shelfName || 'Shelf'}</h1>
 
 	{#if error}<p class="error">{error}</p>{/if}
@@ -252,7 +253,10 @@
 					on:click={() => choose(sort)}
 					aria-pressed={sort.key === sortKey}
 				>
-					{sort.label}{sort.key === sortKey ? (direction === 'asc' ? ' ↑' : ' ↓') : ''}
+					{sort.label}
+					{#if sort.key === sortKey}
+						<Icon name={direction === 'asc' ? 'arrow-up' : 'arrow-down'} size="0.9em" />
+					{/if}
 				</button>
 			{/each}
 		</div>
@@ -272,6 +276,7 @@
 								(selectedIds =
 									selectedIds.length === books.length ? [] : books.map((b) => b.id))}
 						>
+							<Icon name={selectedIds.length === books.length ? 'x' : 'check-square'} />
 							{selectedIds.length === books.length ? 'Select none' : 'Select all'}
 						</button>
 						<button
@@ -279,11 +284,15 @@
 							on:click={askToRemove}
 							disabled={selectedIds.length === 0 || removing}
 						>
-							{removing ? 'Removing…' : removeLabel}
+							<Icon name="trash" />{removing ? 'Removing…' : removeLabel}
 						</button>
-						<button class="chip" on:click={stopSelecting} disabled={removing}>Cancel</button>
+						<button class="chip" on:click={stopSelecting} disabled={removing}>
+							<Icon name="x" />Cancel
+						</button>
 					{:else}
-						<button class="chip" on:click={() => (selecting = true)}>Select books</button>
+						<button class="chip" on:click={() => (selecting = true)}>
+							<Icon name="check-square" />Select books
+						</button>
 					{/if}
 				</div>
 			{/if}
@@ -306,10 +315,14 @@
 			<p class="box-text">{box.text}</p>
 			<div class="row">
 				{#if box.confirm}
-					<button class="btn" on:click={box.confirm}>{box.confirmLabel}</button>
-					<button class="btn secondary" on:click={() => (box = null)}>Cancel</button>
+					<button class="btn danger" on:click={box.confirm}>
+						<Icon name="trash" />{box.confirmLabel}
+					</button>
+					<button class="btn secondary" on:click={() => (box = null)}>
+						<Icon name="x" />Cancel
+					</button>
 				{:else}
-					<button class="btn" on:click={() => (box = null)}>OK</button>
+					<button class="btn" on:click={() => (box = null)}><Icon name="check" />OK</button>
 				{/if}
 			</div>
 		</div>
@@ -332,16 +345,6 @@
 
 	.bar-actions {
 		gap: 8px;
-	}
-
-	.chip.danger {
-		color: var(--danger);
-		border-color: var(--danger);
-	}
-
-	.chip:disabled {
-		opacity: 0.55;
-		cursor: not-allowed;
 	}
 
 	.scrim {

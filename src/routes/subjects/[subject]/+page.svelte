@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { loadBooks } from '$lib/services/books.js';
@@ -25,7 +26,7 @@
 <svelte:head><title>{subject} · GD-Library</title></svelte:head>
 
 <div class="page">
-	<p class="muted"><a href="/subjects">← Subjects</a></p>
+	<p class="muted"><a class="link-btn" href="/subjects"><Icon name="arrow-left" />Subjects</a></p>
 	<h1 class="page-title">{subject}</h1>
 
 	{#if loading}

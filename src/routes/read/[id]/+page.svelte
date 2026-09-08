@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { doc, getDoc } from 'firebase/firestore';
@@ -147,7 +148,7 @@
 
 <div class="reader">
 	<div class="bar">
-		<a class="link-btn" href="/books/{bookId}">← Back</a>
+		<a class="link-btn" href="/books/{bookId}"><Icon name="arrow-left" />Back</a>
 		<span class="title">{book?.title ?? ''}</span>
 		<span class="progress">
 			{#if totalPages}

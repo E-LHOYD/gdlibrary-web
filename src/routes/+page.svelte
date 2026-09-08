@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { goto } from '$app/navigation';
 	import { session } from '$lib/stores/session.js';
 
@@ -27,8 +28,8 @@
 			<h2>Welcome to GD-Library</h2>
 			<p>Your personal digital library at your fingertips</p>
 			<div class="actions">
-				<a href="/login" class="btn btn-primary">Login</a>
-				<a href="/register" class="btn btn-secondary">Register</a>
+				<a href="/login" class="btn btn-primary"><Icon name="log-in" />Login</a>
+				<a href="/register" class="btn btn-secondary"><Icon name="user-plus" />Register</a>
 			</div>
 		</div>
 	</main>
@@ -124,6 +125,7 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
+		gap: 8px;
 		padding: 0.75rem 2rem;
 		border-radius: 4px;
 		text-align: center;

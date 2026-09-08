@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -37,8 +38,10 @@
 	<form class="search" on:submit|preventDefault={submitSearch}>
 		<input type="search" placeholder="Search title or author" bind:value={queryInput} />
 		{#if queryInput}
-			<button type="button" class="btn secondary" on:click={() => (queryInput = '')}>Clear</button>
-			<button type="submit" class="btn">Search</button>
+			<button type="button" class="btn secondary" on:click={() => (queryInput = '')}>
+				<Icon name="x" />Clear
+			</button>
+			<button type="submit" class="btn"><Icon name="search" />Search</button>
 		{/if}
 	</form>
 

@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { session } from '$lib/stores/session.js';
 	import { loadBooks } from '$lib/services/books.js';
@@ -47,9 +48,9 @@
 		<p class="reason">{reason}</p>
 
 		<div class="chips">
-			<button class="chip" on:click={load}>Show me others</button>
-			<a class="chip" href="/browse">Browse all</a>
-			<a class="chip" href="/profile">Edit interests</a>
+			<button class="chip" on:click={load}><Icon name="refresh" />Show me others</button>
+			<a class="chip" href="/browse"><Icon name="grid" />Browse all</a>
+			<a class="chip" href="/profile"><Icon name="edit" />Edit interests</a>
 		</div>
 
 		<BookList

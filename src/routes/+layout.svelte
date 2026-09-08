@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import '$lib/styles.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -51,7 +52,7 @@
 				<a href="/shelf" class:active={$page.url.pathname.startsWith('/shelf')}>My shelf</a>
 				<a href="/profile" class:active={$page.url.pathname === '/profile'}>Profile</a>
 			</nav>
-			<button class="link-btn" on:click={handleSignOut}>Sign out</button>
+			<button class="link-btn" on:click={handleSignOut}><Icon name="log-out" />Sign out</button>
 		</header>
 	{/if}
 

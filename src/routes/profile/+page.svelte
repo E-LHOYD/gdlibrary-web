@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { doc, updateDoc } from 'firebase/firestore';
@@ -146,33 +147,41 @@
 					on:click={() => toggle(subject)}
 					aria-pressed={interests.includes(subject)}
 				>
-					{subject}
+					{#if interests.includes(subject)}<Icon name="check" />{/if}{subject}
 				</button>
 			{/each}
 		</div>
 		<p class="muted spaced">{interests.length}/{REQUIRED_INTERESTS} selected</p>
 		<div class="row">
 			<button class="btn" on:click={save} disabled={saving}>
-				{saving ? 'Saving…' : 'Save interests'}
+				<Icon name="check" />{saving ? 'Saving…' : 'Save interests'}
 			</button>
-			<button class="btn secondary" on:click={cancel} disabled={saving}>Cancel</button>
+			<button class="btn secondary" on:click={cancel} disabled={saving}>
+				<Icon name="x" />Cancel
+			</button>
 		</div>
 	{:else}
 		<div class="chips">
 			{#each interests as subject}
-				<span class="chip active">{subject}</span>
+				<span class="chip active"><Icon name="check" />{subject}</span>
 			{/each}
 			{#if interests.length === 0}
 				<span class="muted">None chosen yet.</span>
 			{/if}
 		</div>
-		<button class="btn secondary" on:click={() => (editing = true)}>Change interests</button>
+		<button class="btn secondary" on:click={() => (editing = true)}>
+			<Icon name="edit" />Change interests
+		</button>
 	{/if}
 
 	<h2 class="section-title">Account</h2>
 	<div class="row">
-		<button class="btn secondary" on:click={resetPassword}>Send password reset email</button>
-		<button class="btn secondary" on:click={handleSignOut}>Sign out</button>
+		<button class="btn secondary" on:click={resetPassword}>
+			<Icon name="mail" />Send password reset email
+		</button>
+		<button class="btn secondary" on:click={handleSignOut}>
+			<Icon name="log-out" />Sign out
+		</button>
 	</div>
 </div>
 

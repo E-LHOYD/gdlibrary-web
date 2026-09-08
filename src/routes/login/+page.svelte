@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { goto } from '$app/navigation';
 	import {
 		signInWithEmailAndPassword,
@@ -133,8 +134,12 @@
 					bind:value={password}
 					autocomplete="current-password"
 				/>
-				<button type="button" class="btn secondary toggle" on:click={() => (showPassword = !showPassword)}>
-					{showPassword ? 'Hide' : 'Show'}
+				<button
+					type="button"
+					class="btn secondary toggle"
+					on:click={() => (showPassword = !showPassword)}
+				>
+					<Icon name={showPassword ? 'eye-off' : 'eye'} />{showPassword ? 'Hide' : 'Show'}
 				</button>
 			</span>
 		</label>
@@ -145,12 +150,12 @@
 				Keep me logged in
 			</label>
 			<button type="button" class="link-btn" on:click={handleForgotPassword} disabled={sendingReset}>
-				{sendingReset ? 'Sending…' : 'Forgot password?'}
+				<Icon name="mail" />{sendingReset ? 'Sending…' : 'Forgot password?'}
 			</button>
 		</div>
 
 		<button class="btn block" type="submit" disabled={busy}>
-			{busy ? 'Signing in…' : 'Log in'}
+			<Icon name="log-in" />{busy ? 'Signing in…' : 'Log in'}
 		</button>
 	</form>
 

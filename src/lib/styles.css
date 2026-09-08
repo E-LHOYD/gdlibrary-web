@@ -68,6 +68,7 @@ a {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	gap: 8px;
 	min-height: 48px;
 	padding: 8px 20px;
 	border: 2px solid var(--brand);
@@ -103,6 +104,50 @@ a {
 	cursor: not-allowed;
 }
 
+/* Destructive actions. Red is the only colour in the palette that is not
+   brand navy, so it means one thing and nothing else uses it: pressing this
+   takes something away. Solid for the button that actually does it, outlined
+   for the one that opens the confirmation. */
+.btn.danger {
+	background: var(--danger);
+	border-color: var(--danger);
+	color: #fff;
+}
+
+.btn.danger:hover:not(:disabled) {
+	background: #8c1e17;
+	border-color: #8c1e17;
+}
+
+.btn.danger.secondary {
+	background: #fff;
+	color: var(--danger);
+}
+
+.btn.danger.secondary:hover:not(:disabled) {
+	background: var(--danger);
+	color: #fff;
+}
+
+.chip.danger {
+	color: var(--danger);
+	border-color: var(--danger);
+}
+
+.chip.danger:hover:not(:disabled) {
+	background: var(--danger);
+	color: #fff;
+}
+
+.chip:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.link-btn.danger {
+	color: var(--danger);
+}
+
 .btn.block {
 	display: flex;
 	width: 100%;
@@ -112,6 +157,7 @@ a {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	gap: 6px;
 	background: none;
 	border: none;
 	padding: 0;
@@ -259,6 +305,7 @@ textarea {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	gap: 6px;
 	padding: 6px 12px;
 	line-height: 1.2;
 	border: 1px solid var(--border);

@@ -1,4 +1,5 @@
 <script>
+	import Icon from '$lib/components/Icon.svelte';
 	import { goto } from '$app/navigation';
 	import { createUserWithEmailAndPassword } from 'firebase/auth';
 	import { doc, setDoc } from 'firebase/firestore';
@@ -148,10 +149,10 @@
 		<h2 class="section-title">Role</h2>
 		<div class="chips">
 			<button type="button" class="chip" class:active={role === 'student'} on:click={() => (role = 'student')}>
-				Student
+				{#if role === 'student'}<Icon name="check" />{/if}Student
 			</button>
 			<button type="button" class="chip" class:active={role === 'teacher'} on:click={() => (role = 'teacher')}>
-				Teacher
+				{#if role === 'teacher'}<Icon name="check" />{/if}Teacher
 			</button>
 		</div>
 
@@ -169,7 +170,7 @@
 					class:active={studentType === 'senior-high'}
 					on:click={() => (studentType = 'senior-high')}
 				>
-					Senior High
+					{#if studentType === 'senior-high'}<Icon name="check" />{/if}Senior High
 				</button>
 				<button
 					type="button"
@@ -177,7 +178,7 @@
 					class:active={studentType === 'college'}
 					on:click={() => (studentType = 'college')}
 				>
-					College
+					{#if studentType === 'college'}<Icon name="check" />{/if}College
 				</button>
 			</div>
 
@@ -244,7 +245,7 @@
 					disabled={interests.length >= REQUIRED_INTERESTS && !interests.includes(subject)}
 					on:click={() => toggleInterest(subject)}
 				>
-					{subject}
+					{#if interests.includes(subject)}<Icon name="check" />{/if}{subject}
 				</button>
 			{/each}
 		</div>
@@ -258,7 +259,7 @@
 		</label>
 
 		<button class="btn block" type="submit" disabled={busy}>
-			{busy ? 'Creating account…' : 'Create account'}
+			<Icon name="user-plus" />{busy ? 'Creating account…' : 'Create account'}
 		</button>
 	</form>
 
