@@ -30,9 +30,18 @@
 	$: idNumber = idNumberOf(profile);
 	$: idLabel = isTeacher(profile) ? 'Employee number' : 'ID number';
 
-	onMount(async () => {
-		interests = Array.isArray(profile?.interests) ? [...profile.interests] : [];
+	// Seeded from the profile whenever it arrives rather than at mount, because
+	// straight after login the session has the user but not yet the profile, and
+	// reading it then showed the reader no interests at all. Never re-seeded once
+	// taken, so the store settling cannot wipe ticks made in the meantime.
+	let interestsTaken = false;
 
+	$: if (!interestsTaken && profile) {
+		interests = Array.isArray(profile.interests) ? [...profile.interests] : [];
+		interestsTaken = true;
+	}
+
+	onMount(async () => {
 		const progress = await getAllReadingProgress();
 		readCount = progress.filter((entry) => entry.status === 'read').length;
 		viewedCount = progress.filter((entry) => entry.status === 'viewed').length;

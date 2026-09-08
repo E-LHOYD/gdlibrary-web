@@ -12,11 +12,11 @@
 	let searchQuery = '';
 	let loading = true;
 	let error = '';
+	let run = 0;
 
 	onMount(async () => {
 		try {
 			books = await loadBooks();
-			displayed = await rankOrRecommend(books, $session.profile);
 		} catch (err) {
 			console.error('Could not load books:', err);
 			error = 'Failed to load books. Please try again.';
@@ -24,6 +24,33 @@
 			loading = false;
 		}
 	});
+
+	// Ordered when the books arrive, and again when the profile does.
+	//
+	// The session publishes the signed-in user before it has read their profile,
+	// so a page opened straight after login sees profile: null for the length of
+	// one Firestore read -- and rankOrRecommend given no profile returns the
+	// library in whatever order Firestore handed it over. Reading the profile
+	// once at mount therefore kept that arbitrary order for the whole visit.
+	$: order(books, $session.profile);
+
+	/**
+	 * @param {any[]} list
+	 * @param {any} profile
+	 */
+	async function order(list, profile) {
+		if (list.length === 0) {
+			displayed = [];
+			return;
+		}
+
+		const mine = ++run;
+		const ordered = await rankOrRecommend(list, profile);
+
+		// An ordering begun without the profile must not land on top of one begun
+		// after it arrived.
+		if (mine === run) displayed = ordered;
+	}
 
 	function submitSearch() {
 		if (searchQuery.trim()) goto('/search?q=' + encodeURIComponent(searchQuery.trim()));
