@@ -57,10 +57,19 @@ a {
 
 /* ---------- controls ---------- */
 
+/* Centred by the box rather than by line-height. A fixed line-height only
+   looks centred while the label is one line in the expected size: the moment a
+   button wraps, or the browser's default font is larger, the text drifts off
+   the middle. Flex centres whatever is inside, at any length.
+
+   min-height rather than height for the same reason: a long label on a narrow
+   button grows the box instead of spilling out of the bottom of it. */
 .btn {
-	display: inline-block;
-	height: 48px;
-	padding: 0 20px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 48px;
+	padding: 8px 20px;
 	border: 2px solid var(--brand);
 	border-radius: 0;
 	background: var(--brand);
@@ -68,10 +77,10 @@ a {
 	font-size: 1rem;
 	font-weight: 700;
 	font-family: inherit;
+	line-height: 1.2;
 	cursor: pointer;
 	text-align: center;
 	text-decoration: none;
-	line-height: 44px;
 }
 
 .btn:hover:not(:disabled) {
@@ -95,11 +104,14 @@ a {
 }
 
 .btn.block {
-	display: block;
+	display: flex;
 	width: 100%;
 }
 
 .link-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	background: none;
 	border: none;
 	padding: 0;
@@ -244,7 +256,11 @@ textarea {
 }
 
 .chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	padding: 6px 12px;
+	line-height: 1.2;
 	border: 1px solid var(--border);
 	background: #fff;
 	color: var(--brand);

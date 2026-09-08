@@ -121,10 +121,15 @@
 	}
 
 	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		padding: 0.75rem 2rem;
 		border-radius: 4px;
+		text-align: center;
 		text-decoration: none;
 		font-weight: bold;
+		line-height: 1.2;
 		transition: all 0.2s;
 	}
 
