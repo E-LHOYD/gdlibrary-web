@@ -111,6 +111,31 @@ export async function removeBookFromShelf(userId, shelfId, bookId) {
 	return saveShelf(userId, shelf);
 }
 
+/**
+ * Take several books off a shelf at once.
+ *
+ * Not a loop over removeBookFromShelf: that reads the shelf and writes the
+ * whole bookIds array back, so two of them in flight together would each write
+ * an array built before the other's removal, and one removal would vanish. One
+ * read, one write, all the books.
+ *
+ * @param {string} userId
+ * @param {string} shelfId
+ * @param {string[]} bookIds
+ */
+export async function removeBooksFromShelf(userId, shelfId, bookIds) {
+	if (!userId || !shelfId || !Array.isArray(bookIds) || bookIds.length === 0) return false;
+
+	const shelves = await getUserShelves(userId);
+	const shelf = shelves.find((s) => s.id === shelfId);
+	if (!shelf) return false;
+
+	const dropping = new Set(bookIds);
+	shelf.bookIds = (shelf.bookIds || []).filter((id) => !dropping.has(id));
+
+	return saveShelf(userId, shelf);
+}
+
 /** @param {string} userId @param {string} shelfId */
 export async function deleteCustomShelf(userId, shelfId) {
 	if (!userId || !shelfId) return false;

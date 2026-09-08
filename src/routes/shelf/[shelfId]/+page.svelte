@@ -3,8 +3,8 @@
 	import { page } from '$app/stores';
 	import { session } from '$lib/stores/session.js';
 	import { loadBooks } from '$lib/services/books.js';
-	import { getUserShelves } from '$lib/services/shelf.js';
-	import { getAllReadingProgress } from '$lib/services/readingProgress.js';
+	import { getUserShelves, removeBooksFromShelf } from '$lib/services/shelf.js';
+	import { getAllReadingProgress, deleteReadingProgress } from '$lib/services/readingProgress.js';
 	import { sortBooks, toTimestamp } from '$lib/services/sortBooks.js';
 	import BookList from '$lib/components/BookList.svelte';
 
@@ -46,6 +46,24 @@
 	/** @type {'asc'|'desc'} */
 	let direction = 'asc';
 
+	let selecting = false;
+	/** @type {string[]} */
+	let selectedIds = [];
+	let removing = false;
+	/**
+	 * One box for both the confirmation and the result. With `confirm` set it
+	 * asks; without it, it only reports.
+	 * @type {{title: string, text: string, confirm?: () => void, confirmLabel?: string} | null}
+	 */
+	let box = null;
+
+	// Reading history, Read and Viewed are not stored lists: they are worked out
+	// from reading progress. Taking a book off one therefore means deleting that
+	// progress record, not unfiling the book, which is a different enough thing
+	// to be worth saying out loud before doing it.
+	$: derived = shelfId === 'history' || shelfId === 'read' || shelfId === 'viewed';
+	$: removeLabel = derived ? 'Remove from history' : 'Remove from shelf';
+
 	$: activeSort = SORTS.find((s) => s.key === sortKey) ?? SORTS[0];
 	$: sorted = sortBooks(books, activeSort.accessor, direction);
 
@@ -64,6 +82,81 @@
 	}
 
 	/** @param {string} id */
+	function toggleSelected(id) {
+		selectedIds = selectedIds.includes(id)
+			? selectedIds.filter((existing) => existing !== id)
+			: [...selectedIds, id];
+	}
+
+	function stopSelecting() {
+		selecting = false;
+		selectedIds = [];
+	}
+
+	function askToRemove() {
+		const count = selectedIds.length;
+		if (count === 0) return;
+
+		const many = `${count} book${count === 1 ? '' : 's'}`;
+
+		box = {
+			title: removeLabel,
+			text: derived
+				? `Clear the reading record for ${many}? They stay in the library, but their progress and the date you last opened them are forgotten.`
+				: `Take ${many} off ${shelfName}? They stay in the library and keep their reading progress.`,
+			confirm: removeSelected,
+			confirmLabel: `Remove ${many}`
+		};
+	}
+
+	async function removeSelected() {
+		const ids = [...selectedIds];
+		box = null;
+		removing = true;
+
+		try {
+			let ok;
+
+			if (derived) {
+				// A progress record per book, each its own document, so these are
+				// independent and can go at once.
+				const results = await Promise.all(ids.map((id) => deleteReadingProgress(id)));
+				ok = results.every(Boolean);
+			} else {
+				ok = await removeBooksFromShelf($session.user.uid, shelfId, ids);
+			}
+
+			if (!ok) {
+				box = {
+					title: 'Could not remove everything',
+					text: 'Some of those books are still there. Please try again.'
+				};
+				await load(shelfId);
+				return;
+			}
+
+			const gone = new Set(ids);
+			books = books.filter((book) => !gone.has(book.id));
+			stopSelecting();
+
+			box = {
+				title: 'Removed',
+				text: derived
+					? `${ids.length} book${ids.length === 1 ? '' : 's'} cleared from your reading history.`
+					: `${ids.length} book${ids.length === 1 ? '' : 's'} removed from ${shelfName}.`
+			};
+		} catch (err) {
+			console.error('Could not remove the books:', err);
+			box = {
+				title: 'Could not remove everything',
+				text: err?.message ?? 'Something went wrong. Please try again.'
+			};
+		} finally {
+			removing = false;
+		}
+	}
+
+	/** @param {string} id */
 	async function load(id) {
 		loading = true;
 		error = '';
@@ -74,6 +167,10 @@
 		// back to Last opened.
 		sortKey = id === 'history' ? 'opened' : 'title';
 		direction = id === 'history' ? 'desc' : 'asc';
+
+		// A shelf change must not carry a selection over to a different list.
+		selecting = false;
+		selectedIds = [];
 
 		try {
 			const userId = $session.user.uid;
@@ -160,14 +257,116 @@
 			{/each}
 		</div>
 
-		<p class="muted count">{books.length} book{books.length === 1 ? '' : 's'}</p>
+		<div class="bar">
+			<p class="muted count">
+				{books.length} book{books.length === 1 ? '' : 's'}
+				{#if selecting}· {selectedIds.length} selected{/if}
+			</p>
 
-		<BookList books={sorted} showProgress empty="Nothing on this shelf yet." />
+			{#if books.length > 0}
+				<div class="row bar-actions">
+					{#if selecting}
+						<button
+							class="chip"
+							on:click={() =>
+								(selectedIds =
+									selectedIds.length === books.length ? [] : books.map((b) => b.id))}
+						>
+							{selectedIds.length === books.length ? 'Select none' : 'Select all'}
+						</button>
+						<button
+							class="chip danger"
+							on:click={askToRemove}
+							disabled={selectedIds.length === 0 || removing}
+						>
+							{removing ? 'Removing…' : removeLabel}
+						</button>
+						<button class="chip" on:click={stopSelecting} disabled={removing}>Cancel</button>
+					{:else}
+						<button class="chip" on:click={() => (selecting = true)}>Select books</button>
+					{/if}
+				</div>
+			{/if}
+		</div>
+
+		<BookList
+			books={sorted}
+			showProgress
+			empty="Nothing on this shelf yet."
+			selectable={selecting}
+			{selectedIds}
+			onToggle={toggleSelected}
+		/>
+	{/if}
+
+	{#if box}
+		<div class="scrim" role="presentation" on:click={() => (box = null)}></div>
+		<div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="box-title">
+			<h2 class="section-title top" id="box-title">{box.title}</h2>
+			<p class="box-text">{box.text}</p>
+			<div class="row">
+				{#if box.confirm}
+					<button class="btn" on:click={box.confirm}>{box.confirmLabel}</button>
+					<button class="btn secondary" on:click={() => (box = null)}>Cancel</button>
+				{:else}
+					<button class="btn" on:click={() => (box = null)}>OK</button>
+				{/if}
+			</div>
+		</div>
 	{/if}
 </div>
 
 <style>
+	.bar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
+		margin-bottom: 12px;
+	}
+
 	.count {
-		margin: 0 0 12px 0;
+		margin: 0;
+	}
+
+	.bar-actions {
+		gap: 8px;
+	}
+
+	.chip.danger {
+		color: var(--danger);
+		border-color: var(--danger);
+	}
+
+	.chip:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+	}
+
+	.scrim {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.5);
+	}
+
+	.modal {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: min(420px, calc(100vw - 40px));
+		background: #fff;
+		border: 2px solid var(--ink);
+		padding: 20px;
+	}
+
+	.top {
+		margin-top: 0;
+	}
+
+	.box-text {
+		margin: 0 0 20px 0;
+		line-height: 1.5;
 	}
 </style>
