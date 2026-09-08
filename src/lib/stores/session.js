@@ -27,6 +27,14 @@ export function startSession() {
 			return;
 		}
 
+		// The user is published before the profile is fetched, not after. The
+		// layout sends anyone without a user to the login page, so holding the
+		// user back for the length of a Firestore round trip meant a fresh
+		// sign-in was briefly indistinguishable from being signed out, and the
+		// guard bounced it straight back to /login. Fast networks hid it; slow
+		// ones did not.
+		session.set({ loading: false, user, profile: null });
+
 		let profile = null;
 
 		try {
@@ -38,7 +46,11 @@ export function startSession() {
 			console.error('Could not read the user profile:', error);
 		}
 
-		session.set({ loading: false, user, profile });
+		// Ignored if someone signed out, or signed in as someone else, while
+		// this was in flight: that newer state is the true one.
+		session.update((current) =>
+			current.user?.uid === user.uid ? { ...current, profile } : current
+		);
 	});
 }
 

@@ -4,6 +4,7 @@
 	import { doc, setDoc } from 'firebase/firestore';
 	import { auth, db } from '$lib/firebase';
 	import { DEFAULT_SUBJECTS } from '$lib/services/subjects.js';
+	import { session } from '$lib/stores/session.js';
 	import { SENIOR_HIGH_LEVELS, COLLEGE_LEVELS } from '$lib/services/yearLevels.js';
 	import { DEPARTMENTS } from '$lib/services/users.js';
 
@@ -38,6 +39,10 @@
 
 	/** @type {string[]} */
 	let interests = [];
+
+	// Same as the login page: the move to the library follows the session
+	// reporting the new user, not the account-creation call returning.
+	$: if ($session.user) goto('/library');
 
 	let errorMessage = '';
 	let busy = false;
@@ -116,7 +121,6 @@
 			};
 
 			await setDoc(doc(db, 'users', uid), profile);
-			goto('/library');
 		} catch (error) {
 			if (error?.code === 'auth/email-already-in-use') {
 				errorMessage = 'That email is already registered.';

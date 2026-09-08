@@ -9,6 +9,13 @@
 	} from 'firebase/auth';
 	import { collection, getDocs, query, where, limit } from 'firebase/firestore';
 	import { auth, db } from '$lib/firebase';
+	import { session } from '$lib/stores/session.js';
+
+	// Leaving for the library is driven by the session reporting a user, not by
+	// the sign-in call returning. Those are not the same moment, and navigating
+	// on the earlier one raced the layout's signed-out guard. This also covers
+	// someone who is already signed in and opens /login directly.
+	$: if ($session.user) goto('/library');
 
 	let loginInput = '';
 	let password = '';
@@ -62,7 +69,6 @@
 			}
 
 			await signInWithEmailAndPassword(auth, email, password);
-			goto('/library');
 		} catch (error) {
 			if (error?.code === 'auth/user-not-found') {
 				errorMessage = 'User not found. Please check your username or email.';
