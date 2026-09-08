@@ -55,9 +55,34 @@
 		}
 	}
 
+	/**
+	 * The shelf with this book on it. The count on screen is rendered from this
+	 * array, so a write that only reaches Firestore leaves the number where it
+	 * was until the picker is reopened.
+	 * @param {any} shelf
+	 */
+	function withBook(shelf) {
+		const bookIds = shelf.bookIds || [];
+		return bookIds.includes(bookId) ? shelf : { ...shelf, bookIds: [...bookIds, bookId] };
+	}
+
+	/** @param {any} shelf */
+	function holdsThisBook(shelf) {
+		return (shelf.bookIds || []).includes(bookId);
+	}
+
 	async function addTo(shelfId) {
+		shelfMessage = '';
+
 		try {
-			await addBookToShelf($session.user.uid, shelfId, bookId);
+			const added = await addBookToShelf($session.user.uid, shelfId, bookId);
+
+			if (!added) {
+				shelfMessage = 'Could not add the book to that shelf.';
+				return;
+			}
+
+			shelves = shelves.map((shelf) => (shelf.id === shelfId ? withBook(shelf) : shelf));
 			shelfMessage = 'Added to the shelf.';
 		} catch (err) {
 			shelfMessage = err?.message ?? 'Could not add the book.';
@@ -65,11 +90,15 @@
 	}
 
 	async function createAndAdd() {
+		shelfMessage = '';
+
 		try {
 			const shelf = await createCustomShelf($session.user.uid, newShelfName);
 			await addBookToShelf($session.user.uid, shelf.id, bookId);
 			newShelfName = '';
-			shelves = [...shelves, shelf];
+			// createCustomShelf returns the shelf as it was created, which is empty;
+			// the book has just gone onto it, so it is listed with the book on it.
+			shelves = [...shelves, withBook(shelf)];
 			shelfMessage = 'Shelf created, and the book added to it.';
 		} catch (err) {
 			shelfMessage = err?.message ?? 'Could not create the shelf.';
@@ -140,9 +169,13 @@
 				{:else}
 					<div class="shelf-list">
 						{#each shelves as shelf}
-							<button class="shelf" on:click={() => addTo(shelf.id)}>
+							{@const holds = holdsThisBook(shelf)}
+							<button class="shelf" on:click={() => addTo(shelf.id)} disabled={holds}>
 								<span>{shelf.name}</span>
-								<span class="muted">{shelf.bookIds?.length || 0} books</span>
+								<span class="muted">
+									{shelf.bookIds?.length || 0} book{(shelf.bookIds?.length || 0) === 1 ? '' : 's'}
+									{holds ? ' · on this shelf' : ''}
+								</span>
 							</button>
 						{/each}
 					</div>
@@ -245,8 +278,13 @@
 		cursor: pointer;
 	}
 
-	.shelf:hover {
+	.shelf:hover:not(:disabled) {
 		background: var(--tint);
+	}
+
+	.shelf:disabled {
+		cursor: default;
+		color: var(--muted);
 	}
 
 	.new {
