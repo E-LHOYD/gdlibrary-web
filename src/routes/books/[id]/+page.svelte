@@ -7,12 +7,7 @@
 	import { bookSubjects } from '$lib/services/subjects.js';
 	import { yearLevelsLabel } from '$lib/services/yearLevels.js';
 	import { getReadingProgress } from '$lib/services/readingProgress.js';
-	import {
-		getUserShelves,
-		addBookToShelf,
-		removeBookFromShelf,
-		createCustomShelf
-	} from '$lib/services/shelf.js';
+	import { getUserShelves, addBookToShelf, createCustomShelf } from '$lib/services/shelf.js';
 
 	let book = null;
 	let loading = true;
@@ -25,6 +20,11 @@
 	let newShelfName = '';
 	// The shelf a write is in flight for, so its row cannot be pressed twice.
 	let pending = '';
+	/**
+	 * The box shown after pressing a shelf: what happened, and nothing to decide.
+	 * @type {{title: string, text: string} | null}
+	 */
+	let resultBox = null;
 
 	$: bookId = $page.params.id;
 
@@ -79,64 +79,66 @@
 	}
 
 	/**
-	 * The shelf without this book on it.
+	 * Put the book on the shelf, and say what happened.
+	 *
+	 * A shelf that already holds the book is answered rather than written to:
+	 * addBookToShelf reports success either way, so without this check pressing
+	 * an already-filed shelf would claim a second copy had been added.
+	 *
 	 * @param {any} shelf
 	 */
-	function withoutBook(shelf) {
-		return { ...shelf, bookIds: (shelf.bookIds || []).filter((id) => id !== bookId) };
-	}
+	async function addTo(shelf) {
+		if (holdsThisBook(shelf)) {
+			resultBox = {
+				title: 'Already on that shelf',
+				text: `This book is already on ${shelf.name}.`
+			};
+			return;
+		}
 
-	/**
-	 * Put the book on the shelf, or take it off again.
-	 *
-	 * A picker that only adds has nothing to offer once the book is already
-	 * filed, which is the state most books end up in. Pressing a row it is
-	 * already on takes it off, so the row always does something and the count
-	 * moves in both directions.
-	 *
-	 * @param {any} shelf
-	 */
-	async function toggle(shelf) {
-		shelfMessage = '';
 		pending = shelf.id;
 
-		const holds = holdsThisBook(shelf);
-
 		try {
-			const ok = holds
-				? await removeBookFromShelf($session.user.uid, shelf.id, bookId)
-				: await addBookToShelf($session.user.uid, shelf.id, bookId);
+			const added = await addBookToShelf($session.user.uid, shelf.id, bookId);
 
-			if (!ok) {
-				shelfMessage = `Could not ${holds ? 'remove the book from' : 'add the book to'} ${shelf.name}.`;
+			if (!added) {
+				resultBox = {
+					title: 'Could not add the book',
+					text: `${shelf.name} could not be updated. Please try again.`
+				};
 				return;
 			}
 
-			shelves = shelves.map((s) =>
-				s.id === shelf.id ? (holds ? withoutBook(s) : withBook(s)) : s
-			);
-
-			shelfMessage = holds ? `Removed from ${shelf.name}.` : `Added to ${shelf.name}.`;
+			shelves = shelves.map((s) => (s.id === shelf.id ? withBook(s) : s));
+			resultBox = { title: 'Added to the shelf', text: `This book is now on ${shelf.name}.` };
 		} catch (err) {
-			shelfMessage = err?.message ?? 'Could not change that shelf.';
+			resultBox = {
+				title: 'Could not add the book',
+				text: err?.message ?? 'Something went wrong. Please try again.'
+			};
 		} finally {
 			pending = '';
 		}
 	}
 
 	async function createAndAdd() {
-		shelfMessage = '';
+		const name = newShelfName.trim();
 
 		try {
-			const shelf = await createCustomShelf($session.user.uid, newShelfName);
+			const shelf = await createCustomShelf($session.user.uid, name);
 			await addBookToShelf($session.user.uid, shelf.id, bookId);
 			newShelfName = '';
 			// createCustomShelf returns the shelf as it was created, which is empty;
 			// the book has just gone onto it, so it is listed with the book on it.
 			shelves = [...shelves, withBook(shelf)];
-			shelfMessage = 'Shelf created, and the book added to it.';
+			resultBox = { title: 'Shelf created', text: `This book is now on ${shelf.name}.` };
 		} catch (err) {
-			shelfMessage = err?.message ?? 'Could not create the shelf.';
+			// A duplicate name or the five-shelf limit lands here, and both are
+			// worth reading, so they go in the box rather than being swallowed.
+			resultBox = {
+				title: 'Could not create the shelf',
+				text: err?.message ?? 'Something went wrong. Please try again.'
+			};
 		}
 	}
 </script>
@@ -204,25 +206,17 @@
 				{:else}
 					<div class="shelf-list">
 						{#each shelves as shelf}
-							{@const holds = holdsThisBook(shelf)}
 							{@const count = shelf.bookIds?.length || 0}
 							<button
 								class="shelf"
-								class:on={holds}
-								on:click={() => toggle(shelf)}
+								on:click={() => addTo(shelf)}
 								disabled={pending === shelf.id}
-								aria-pressed={holds}
-								title={holds ? `Remove from ${shelf.name}` : `Add to ${shelf.name}`}
 							>
-								<span class="mark" aria-hidden="true">{holds ? '✓' : '+'}</span>
 								<span class="shelf-name">{shelf.name}</span>
 								<span class="muted">{count} book{count === 1 ? '' : 's'}</span>
 							</button>
 						{/each}
 					</div>
-					<p class="muted picker-hint">
-						A ticked shelf already holds this book. Press it again to take it off.
-					</p>
 				{/if}
 
 				<label class="field new">
@@ -235,6 +229,18 @@
 						Create and add
 					</button>
 					<button class="btn secondary" on:click={() => (showShelfPicker = false)}>Close</button>
+				</div>
+			</div>
+		{/if}
+
+		{#if resultBox}
+			<!-- After the picker in the markup, so it paints over it. -->
+			<div class="scrim" role="presentation" on:click={() => (resultBox = null)}></div>
+			<div class="modal box" role="alertdialog" aria-modal="true" aria-labelledby="result-title">
+				<h2 class="section-title top" id="result-title">{resultBox.title}</h2>
+				<p class="box-text">{resultBox.text}</p>
+				<div class="row">
+					<button class="btn" on:click={() => (resultBox = null)}>OK</button>
 				</div>
 			</div>
 		{/if}
@@ -335,24 +341,13 @@
 		flex: 1;
 	}
 
-	/* Fixed width so the names line up whether ticked or not. */
-	.mark {
-		width: 1.1em;
-		font-weight: 700;
-		color: var(--muted);
+	.box {
+		width: min(380px, calc(100vw - 40px));
 	}
 
-	.shelf.on .mark {
-		color: var(--brand);
-	}
-
-	.shelf.on .shelf-name {
-		font-weight: 700;
-		color: var(--brand);
-	}
-
-	.picker-hint {
-		margin: -8px 0 16px 0;
+	.box-text {
+		margin: 0 0 20px 0;
+		line-height: 1.5;
 	}
 
 	.new {
