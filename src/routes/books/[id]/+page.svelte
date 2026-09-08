@@ -7,7 +7,12 @@
 	import { bookSubjects } from '$lib/services/subjects.js';
 	import { yearLevelsLabel } from '$lib/services/yearLevels.js';
 	import { getReadingProgress } from '$lib/services/readingProgress.js';
-	import { getUserShelves, addBookToShelf, createCustomShelf } from '$lib/services/shelf.js';
+	import {
+		getUserShelves,
+		addBookToShelf,
+		removeBookFromShelf,
+		createCustomShelf
+	} from '$lib/services/shelf.js';
 
 	let book = null;
 	let loading = true;
@@ -18,6 +23,8 @@
 	let showShelfPicker = false;
 	let shelfMessage = '';
 	let newShelfName = '';
+	// The shelf a write is in flight for, so its row cannot be pressed twice.
+	let pending = '';
 
 	$: bookId = $page.params.id;
 
@@ -71,21 +78,49 @@
 		return (shelf.bookIds || []).includes(bookId);
 	}
 
-	async function addTo(shelfId) {
+	/**
+	 * The shelf without this book on it.
+	 * @param {any} shelf
+	 */
+	function withoutBook(shelf) {
+		return { ...shelf, bookIds: (shelf.bookIds || []).filter((id) => id !== bookId) };
+	}
+
+	/**
+	 * Put the book on the shelf, or take it off again.
+	 *
+	 * A picker that only adds has nothing to offer once the book is already
+	 * filed, which is the state most books end up in. Pressing a row it is
+	 * already on takes it off, so the row always does something and the count
+	 * moves in both directions.
+	 *
+	 * @param {any} shelf
+	 */
+	async function toggle(shelf) {
 		shelfMessage = '';
+		pending = shelf.id;
+
+		const holds = holdsThisBook(shelf);
 
 		try {
-			const added = await addBookToShelf($session.user.uid, shelfId, bookId);
+			const ok = holds
+				? await removeBookFromShelf($session.user.uid, shelf.id, bookId)
+				: await addBookToShelf($session.user.uid, shelf.id, bookId);
 
-			if (!added) {
-				shelfMessage = 'Could not add the book to that shelf.';
+			if (!ok) {
+				shelfMessage = `Could not ${holds ? 'remove the book from' : 'add the book to'} ${shelf.name}.`;
 				return;
 			}
 
-			shelves = shelves.map((shelf) => (shelf.id === shelfId ? withBook(shelf) : shelf));
-			shelfMessage = 'Added to the shelf.';
+			shelves = shelves.map((s) =>
+				s.id === shelf.id ? (holds ? withoutBook(s) : withBook(s)) : s
+			);
+
+			shelfMessage = holds ? `Removed from ${shelf.name}.` : `Added to ${shelf.name}.`;
 		} catch (err) {
-			shelfMessage = err?.message ?? 'Could not add the book.';
+			shelfMessage = err?.message ?? 'Could not change that shelf.';
+		} finally {
+			pending = '';
 		}
 	}
 
@@ -170,15 +205,24 @@
 					<div class="shelf-list">
 						{#each shelves as shelf}
 							{@const holds = holdsThisBook(shelf)}
-							<button class="shelf" on:click={() => addTo(shelf.id)} disabled={holds}>
-								<span>{shelf.name}</span>
-								<span class="muted">
-									{shelf.bookIds?.length || 0} book{(shelf.bookIds?.length || 0) === 1 ? '' : 's'}
-									{holds ? ' · on this shelf' : ''}
-								</span>
+							{@const count = shelf.bookIds?.length || 0}
+							<button
+								class="shelf"
+								class:on={holds}
+								on:click={() => toggle(shelf)}
+								disabled={pending === shelf.id}
+								aria-pressed={holds}
+								title={holds ? `Remove from ${shelf.name}` : `Add to ${shelf.name}`}
+							>
+								<span class="mark" aria-hidden="true">{holds ? '✓' : '+'}</span>
+								<span class="shelf-name">{shelf.name}</span>
+								<span class="muted">{count} book{count === 1 ? '' : 's'}</span>
 							</button>
 						{/each}
 					</div>
+					<p class="muted picker-hint">
+						A ticked shelf already holds this book. Press it again to take it off.
+					</p>
 				{/if}
 
 				<label class="field new">
@@ -283,8 +327,32 @@
 	}
 
 	.shelf:disabled {
-		cursor: default;
+		opacity: 0.55;
+		cursor: progress;
+	}
+
+	.shelf-name {
+		flex: 1;
+	}
+
+	/* Fixed width so the names line up whether ticked or not. */
+	.mark {
+		width: 1.1em;
+		font-weight: 700;
 		color: var(--muted);
+	}
+
+	.shelf.on .mark {
+		color: var(--brand);
+	}
+
+	.shelf.on .shelf-name {
+		font-weight: 700;
+		color: var(--brand);
+	}
+
+	.picker-hint {
+		margin: -8px 0 16px 0;
 	}
 
 	.new {
