@@ -12,8 +12,7 @@ made here is the same shelf there.
 | --- | --- | --- |
 | Welcome | `/` | Sends a signed-in visitor straight to the library |
 | Sign in | `/login` | Includes the forgot-password email |
-| Register | `/register` | Student (senior high / college) or teacher, three interests |
-| Library | `/library` | Every book, ordered by how well it fits the reader |
+| Library | `/library` | Books recommended for the reader first, then the rest of the library |
 | Browse all | `/browse` | The plain list, with search |
 | Subjects | `/subjects`, `/subjects/[subject]` | Grouped by the dashboard's subject list |
 | Search | `/search?q=` | Title or author, every term must match |
@@ -21,8 +20,7 @@ made here is the same shelf there.
 | Reader | `/read/[id]` | pdf.js, saving progress as you scroll |
 | My shelf | `/shelf` | Reading history, Read, Viewed and up to five of your own |
 | A shelf | `/shelf/[shelfId]` | Sortable by title, author, progress, published date, last opened |
-| For you | `/recommendations` | Year level filters, interests rank |
-| Profile | `/profile` | Details, reading counts, editable interests, password reset |
+| Profile | `/profile` | Username, program, year level, and editable interests |
 
 ## How the code is laid out
 
@@ -33,10 +31,11 @@ recommendations work can be made in one place and copied to the other rather
 than reinvented. The only difference is the Firebase call style: the app uses
 the NativeScript plugin's namespaced API, the web uses the modular SDK.
 
-`order.js` is web-only. `recommendBooks` filters as well as ranks, which is
-right for the For-you page and wrong for the library, where every book should
-still be reachable. `rankOrRecommend` scores the whole library and puts what
-the filter would have dropped underneath instead of removing it.
+The library page leads with `recommendBooks`: year level filters, subjects
+filter and rank, interests counting double a strand's or course's subjects.
+Below that it lists every other book, so nothing in the library is out of
+reach. `order.js` (`rankOrRecommend`) is the web-only helper that scores a whole
+list without dropping anything.
 
 ## Running it
 

@@ -159,7 +159,7 @@
 		</button>
 	</form>
 
-	<p class="muted foot">No account yet? <a href="/register">Register</a></p>
+	<p class="muted foot">No account yet? Ask your library administrator to create one for you.</p>
 </div>
 
 <style>

@@ -29,7 +29,6 @@
 			<p>Your personal digital library at your fingertips</p>
 			<div class="actions">
 				<a href="/login" class="btn btn-primary"><Icon name="log-in" />Login</a>
-				<a href="/register" class="btn btn-secondary"><Icon name="user-plus" />Register</a>
 			</div>
 		</div>
 	</main>
@@ -142,16 +141,6 @@
 
 	.btn-primary:hover {
 		background-color: #044066;
-	}
-
-	.btn-secondary {
-		background-color: white;
-		color: #033047;
-		border: 2px solid #033047;
-	}
-
-	.btn-secondary:hover {
-		background-color: #f0f0f0;
 	}
 
 	.footer {

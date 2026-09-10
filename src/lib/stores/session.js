@@ -6,7 +6,7 @@
 
 import { writable, derived } from 'svelte/store';
 import { onAuthStateChanged, signOut as fbSignOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
 import { auth, db } from '$lib/firebase';
 
 /** @type {import('svelte/store').Writable<{loading: boolean, user: any, profile: any}>} */
@@ -15,6 +15,39 @@ export const session = writable({ loading: true, user: null, profile: null });
 export const isSignedIn = derived(session, ($s) => Boolean($s.user));
 
 let started = false;
+
+/**
+ * Where a signed-in user's profile lives in Firestore.
+ *
+ * Accounts made by the app and the dashboard's register page are stored under
+ * the Auth uid, which is checked first. Anything written another way (an added
+ * document with a generated id) still carries the uid or the email, so those
+ * are tried next rather than showing the reader an empty profile.
+ *
+ * @param {{ uid: string, email?: string | null }} user
+ * @returns {Promise<import('firebase/firestore').DocumentReference | null>}
+ */
+export async function findProfileRef(user) {
+	const byId = doc(db, 'users', user.uid);
+	const snapshot = await getDoc(byId);
+	if (snapshot.exists()) return byId;
+
+	const lookups = [where('uid', '==', user.uid)];
+	if (user.email) lookups.push(where('email', '==', user.email));
+
+	for (const condition of lookups) {
+		try {
+			const found = await getDocs(query(collection(db, 'users'), condition, limit(1)));
+			if (!found.empty) return found.docs[0].ref;
+		} catch (error) {
+			// Security rules may refuse a query that a direct read would pass; the
+			// next lookup, or no profile at all, is the answer then.
+			console.error('Could not look the profile up:', error);
+		}
+	}
+
+	return null;
+}
 
 /** Begin watching auth state. Safe to call more than once. */
 export function startSession() {
@@ -38,8 +71,9 @@ export function startSession() {
 		let profile = null;
 
 		try {
-			const snapshot = await getDoc(doc(db, 'users', user.uid));
-			profile = snapshot.exists() ? snapshot.data() : null;
+			const ref = await findProfileRef(user);
+			const snapshot = ref ? await getDoc(ref) : null;
+			profile = snapshot?.exists() ? snapshot.data() : null;
 		} catch (error) {
 			// A missing or unreadable profile should not lock anyone out; pages
 			// that need it say so themselves.
