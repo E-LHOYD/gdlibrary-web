@@ -18,7 +18,7 @@ made here is the same shelf there.
 | Search | `/search?q=` | Book number, title or author, every term must match |
 | Book | `/books/[id]` | Cover (or the book's first page when there is none), details, shelves |
 | Reader | `/read/[id]` | pdf.js, saving progress as you scroll; bookmark any number of pages and jump back to them |
-| My shelf | `/shelf` | Reading history, Read, Viewed and up to five of your own |
+| My shelf | `/shelf` | Reading history, Read, Viewed and up to ten of your own |
 | A shelf | `/shelf/[shelfId]` | Sortable by title, author, progress, published date, last opened |
 | Profile | `/profile` | Username, program, year level, and editable interests |
 | Settings | `/settings` | Keep me logged in, and changing the password (current password required) |

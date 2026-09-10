@@ -5,7 +5,7 @@
 import { collection, doc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '$lib/firebase';
 
-export const MAX_CUSTOM_SHELVES = 5;
+export const MAX_CUSTOM_SHELVES = 10;
 
 export function getCurrentUserId() {
 	return auth.currentUser?.uid || null;

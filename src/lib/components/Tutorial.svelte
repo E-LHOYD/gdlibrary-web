@@ -59,7 +59,7 @@
 		{
 			image: shelfImg,
 			title: 'My shelf',
-			body: 'My shelf has your reading history and the shelves you make yourself. You can create up to five, name them what you like, and remove books from them any time.'
+			body: 'My shelf has your reading history and the shelves you make yourself. You can create up to ten, name them what you like, and remove books from them any time.'
 		},
 		{
 			image: profileImg,

@@ -135,7 +135,7 @@
 			shelves = [...shelves, withBook(shelf)];
 			resultBox = { title: 'Shelf created', text: `This book is now on ${shelf.name}.` };
 		} catch (err) {
-			// A duplicate name or the five-shelf limit lands here, and both are
+			// A duplicate name or the shelf limit lands here, and both are
 			// worth reading, so they go in the box rather than being swallowed.
 			resultBox = {
 				title: 'Could not create the shelf',
