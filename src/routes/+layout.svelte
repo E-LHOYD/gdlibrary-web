@@ -1,5 +1,7 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
+	import InterestsPrompt from '$lib/components/InterestsPrompt.svelte';
+	import Tutorial from '$lib/components/Tutorial.svelte';
 	import '$lib/styles.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
@@ -49,11 +51,19 @@
 				<a href="/shelf" class:active={$page.url.pathname.startsWith('/shelf')}>My shelf</a>
 				<a href="/profile" class:active={$page.url.pathname === '/profile'}>Profile</a>
 			</nav>
-			<button class="link-btn" on:click={handleSignOut}><Icon name="log-out" />Sign out</button>
+			<div class="account">
+				<a href="/settings" class="link-btn" class:active={$page.url.pathname === '/settings'}>
+					<Icon name="settings" />Settings
+				</a>
+				<button class="link-btn" on:click={handleSignOut}><Icon name="log-out" />Sign out</button>
+			</div>
 		</header>
 	{/if}
 
 	<slot />
+
+	<InterestsPrompt />
+	<Tutorial />
 {/if}
 
 <style>
@@ -93,6 +103,16 @@
 
 	nav a.active {
 		color: var(--brand);
+		font-weight: 700;
+	}
+
+	.account {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+
+	.account a.active {
 		font-weight: 700;
 	}
 </style>

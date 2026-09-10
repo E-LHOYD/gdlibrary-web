@@ -6,6 +6,7 @@
 	import { DEFAULT_SUBJECTS } from '$lib/services/subjects.js';
 	import { isTeacher } from '$lib/services/users.js';
 	import { studentLevel } from '$lib/services/yearLevels.js';
+	import { openTutorial } from '$lib/stores/tutorial.js';
 
 	// Signup asks for exactly three, and the recommendation weighting assumes a
 	// small deliberate set rather than a checklist, so editing keeps the rule.
@@ -141,7 +142,18 @@
 <svelte:head><title>Profile · GD-Library</title></svelte:head>
 
 <div class="page">
-	<h1 class="page-title">Profile</h1>
+	<div class="title-row">
+		<h1 class="page-title">Profile</h1>
+		<button
+			type="button"
+			class="help-btn"
+			on:click={openTutorial}
+			aria-label="Show the tour of how to use GD-Library"
+			title="How to use GD-Library"
+		>
+			?
+		</button>
+	</div>
 
 	{#if message}<p class="notice">{message}</p>{/if}
 	{#if error}<p class="error">{error}</p>{/if}
@@ -230,5 +242,37 @@
 
 	.spaced {
 		margin-bottom: 12px;
+	}
+
+	.title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: 24px;
+	}
+
+	.title-row .page-title {
+		margin: 0;
+	}
+
+	.help-btn {
+		width: 40px;
+		height: 40px;
+		flex-shrink: 0;
+		border: 2px solid var(--brand);
+		border-radius: 50%;
+		background: #fff;
+		color: var(--brand);
+		font: inherit;
+		font-size: 1.2rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.help-btn:hover,
+	.help-btn:focus-visible {
+		background: var(--brand);
+		color: #fff;
 	}
 </style>

@@ -1,16 +1,11 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
 	import { goto } from '$app/navigation';
-	import {
-		signInWithEmailAndPassword,
-		sendPasswordResetEmail,
-		setPersistence,
-		browserLocalPersistence,
-		browserSessionPersistence
-	} from 'firebase/auth';
+	import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 	import { collection, getDocs, query, where, limit } from 'firebase/firestore';
 	import { auth, db } from '$lib/firebase';
 	import { session } from '$lib/stores/session.js';
+	import { getKeepLoggedIn, setKeepLoggedIn } from '$lib/services/persistence.js';
 
 	// Leaving for the library is driven by the session reporting a user, not by
 	// the sign-in call returning. Those are not the same moment, and navigating
@@ -20,7 +15,7 @@
 
 	let loginInput = '';
 	let password = '';
-	let keepLoggedIn = true;
+	let keepLoggedIn = getKeepLoggedIn();
 	let showPassword = false;
 	let errorMessage = '';
 	let noticeMessage = '';
@@ -56,11 +51,9 @@
 
 		try {
 			// "Keep me logged in" is the difference between surviving a browser
-			// restart and lasting only for this tab.
-			await setPersistence(
-				auth,
-				keepLoggedIn ? browserLocalPersistence : browserSessionPersistence
-			);
+			// restart and lasting only for this tab. The same choice shows, and can
+			// be changed, on the settings page.
+			await setKeepLoggedIn(keepLoggedIn);
 
 			const email = await resolveEmail(loginInput);
 

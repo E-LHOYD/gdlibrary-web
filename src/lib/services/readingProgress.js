@@ -9,7 +9,9 @@ import {
 	where,
 	setDoc,
 	deleteDoc,
-	getDoc
+	getDoc,
+	arrayUnion,
+	arrayRemove
 } from 'firebase/firestore';
 import { auth, db } from '$lib/firebase';
 
@@ -119,4 +121,74 @@ export async function deleteReadingProgress(bookId) {
 		console.error('Could not delete progress:', error);
 		return false;
 	}
+}
+
+// ---------- bookmarks ----------
+//
+// Kept on the same progress document as the reading position, as a list of
+// page numbers in `bookmarks`, so a reader can mark as many pages as they like.
+//
+// The mobile app keeps a single page in `bookmark`. That page is read as one
+// of the bookmarks here, and `bookmark` is kept pointing at the most recently
+// added page, so the app's "Go to bookmark" still takes the reader somewhere
+// they marked.
+
+/**
+ * Every bookmarked page on a progress record, lowest first.
+ * @param {any} progress
+ * @returns {number[]}
+ */
+export function bookmarksOf(progress) {
+	const pages = new Set(
+		(Array.isArray(progress?.bookmarks) ? progress.bookmarks : []).filter(
+			(n) => Number.isInteger(n) && n > 0
+		)
+	);
+	if (Number.isInteger(progress?.bookmark) && progress.bookmark > 0) pages.add(progress.bookmark);
+	return [...pages].sort((a, b) => a - b);
+}
+
+/**
+ * @param {string} bookId
+ * @param {number} pageNumber
+ */
+export async function addBookmark(bookId, pageNumber) {
+	const userId = getCurrentUserId();
+	if (!userId || !bookId) return false;
+
+	await setDoc(
+		doc(db, 'readingProgress', progressId(userId, bookId)),
+		{
+			userId,
+			bookId,
+			bookmarks: arrayUnion(pageNumber),
+			bookmark: pageNumber,
+			bookmarkedAt: new Date()
+		},
+		{ merge: true }
+	);
+	return true;
+}
+
+/**
+ * @param {string} bookId
+ * @param {number} pageNumber
+ * @param {number[]} remaining  the bookmarks left once this one is gone
+ * @param {number | null} appBookmark  the page currently in `bookmark`
+ */
+export async function removeBookmark(bookId, pageNumber, remaining, appBookmark) {
+	const userId = getCurrentUserId();
+	if (!userId || !bookId) return false;
+
+	/** @type {Record<string, any>} */
+	const changes = { bookmarks: arrayRemove(pageNumber) };
+
+	// If the app's single bookmark was this page, point it at another one the
+	// reader kept, or clear it when there are none left.
+	if (appBookmark === pageNumber) {
+		changes.bookmark = remaining.length ? remaining[remaining.length - 1] : null;
+	}
+
+	await setDoc(doc(db, 'readingProgress', progressId(userId, bookId)), changes, { merge: true });
+	return true;
 }

@@ -8,9 +8,12 @@ import { writable, derived } from 'svelte/store';
 import { onAuthStateChanged, signOut as fbSignOut } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
 import { auth, db } from '$lib/firebase';
+import { sessionHasLapsed, startActivityTracking } from '$lib/services/persistence.js';
 
-/** @type {import('svelte/store').Writable<{loading: boolean, user: any, profile: any}>} */
-export const session = writable({ loading: true, user: null, profile: null });
+// profileReady turns true once the profile read has finished, found or not,
+// so a page can tell "no profile yet" apart from "still reading it".
+/** @type {import('svelte/store').Writable<{loading: boolean, user: any, profile: any, profileReady: boolean}>} */
+export const session = writable({ loading: true, user: null, profile: null, profileReady: false });
 
 export const isSignedIn = derived(session, ($s) => Boolean($s.user));
 
@@ -54,9 +57,30 @@ export function startSession() {
 	if (started || typeof window === 'undefined') return;
 	started = true;
 
+	// Only the user the page opened with is checked against "keep me logged
+	// in"; someone signing in on this page has just proved who they are.
+	let checkedOpeningUser = false;
+
 	onAuthStateChanged(auth, async (user) => {
+		const opening = !checkedOpeningUser;
+		checkedOpeningUser = true;
+
+		if (user && opening && sessionHasLapsed()) {
+			// A tab the browser restored after the site was closed, for someone
+			// who asked not to stay logged in. Signing out brings this callback
+			// back with no user, which is what sends them to the login page.
+			try {
+				await fbSignOut(auth);
+				return;
+			} catch (error) {
+				console.error('Could not end the lapsed session:', error);
+			}
+		}
+
+		startActivityTracking();
+
 		if (!user) {
-			session.set({ loading: false, user: null, profile: null });
+			session.set({ loading: false, user: null, profile: null, profileReady: false });
 			return;
 		}
 
@@ -66,7 +90,7 @@ export function startSession() {
 		// sign-in was briefly indistinguishable from being signed out, and the
 		// guard bounced it straight back to /login. Fast networks hid it; slow
 		// ones did not.
-		session.set({ loading: false, user, profile: null });
+		session.set({ loading: false, user, profile: null, profileReady: false });
 
 		let profile = null;
 
@@ -83,7 +107,7 @@ export function startSession() {
 		// Ignored if someone signed out, or signed in as someone else, while
 		// this was in flight: that newer state is the true one.
 		session.update((current) =>
-			current.user?.uid === user.uid ? { ...current, profile } : current
+			current.user?.uid === user.uid ? { ...current, profile, profileReady: true } : current
 		);
 	});
 }

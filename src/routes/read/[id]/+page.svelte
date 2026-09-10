@@ -5,7 +5,14 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase';
 	import { session } from '$lib/stores/session.js';
-	import { saveReadingProgress, getReadingProgress } from '$lib/services/readingProgress.js';
+	import {
+		saveReadingProgress,
+		getReadingProgress,
+		bookmarksOf,
+		addBookmark,
+		removeBookmark
+	} from '$lib/services/readingProgress.js';
+	import { loadPdfjs } from '$lib/services/pdf.js';
 	import { addBookToShelf } from '$lib/services/shelf.js';
 	import { recordActivity } from '$lib/services/presence.js';
 
@@ -21,6 +28,19 @@
 
 	let saveTimer = null;
 	let destroyed = false;
+
+	// ---------- bookmarks ----------
+	/** @type {number[]} */
+	let bookmarks = [];
+	/** The page the mobile app's single bookmark points at, kept in step. */
+	let appBookmark = null;
+	let showBookmarks = false;
+	let bookmarkBusy = false;
+	let bookmarkError = '';
+	/** A bookmark pressed before its page had been drawn; jumped to once it is. */
+	let pendingPage = null;
+
+	$: currentMarked = bookmarks.includes(currentPage);
 
 	$: bookId = $page.params.id;
 	$: percentage = totalPages > 0 ? Math.min(100, (furthestPage / totalPages) * 100) : 0;
@@ -43,6 +63,8 @@
 
 			const existing = await getReadingProgress(bookId);
 			const startAt = existing?.currentPage > 1 ? existing.currentPage : 1;
+			bookmarks = bookmarksOf(existing);
+			appBookmark = Number.isInteger(existing?.bookmark) ? existing.bookmark : null;
 			furthestPage = startAt;
 
 			await renderPdf(book.fileUrl, startAt);
@@ -64,11 +86,8 @@
 	});
 
 	async function renderPdf(url, startAt) {
-		// pdf.js is imported here rather than at the top so it never runs during
-		// SSR or the initial bundle: it is large and only this page needs it.
-		const pdfjs = await import('pdfjs-dist');
-		const workerUrl = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
-		pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+		// Loaded on demand: pdf.js is large and only the reader needs all of it.
+		const pdfjs = await loadPdfjs();
 
 		const pdf = await pdfjs.getDocument({ url }).promise;
 		totalPages = pdf.numPages;
@@ -87,11 +106,16 @@
 			pagesEl.appendChild(canvas);
 
 			await pdfPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+			if (pendingPage === number) {
+				pendingPage = null;
+				canvas.scrollIntoView({ block: 'start' });
+			}
 		}
 
 		watchScroll();
 
-		if (startAt > 1) {
+		if (startAt > 1 && pendingPage === null) {
 			const target = pagesEl.querySelector(`[data-page="${startAt}"]`);
 			if (target) target.scrollIntoView();
 		}
@@ -129,6 +153,69 @@
 		saveTimer = setTimeout(persist, 1500);
 	}
 
+	/** @param {number} number */
+	function goToPage(number) {
+		showBookmarks = false;
+		const target = pagesEl?.querySelector(`[data-page="${number}"]`);
+
+		if (target) {
+			target.scrollIntoView({ block: 'start' });
+		} else {
+			// Pages are drawn in order, so a far bookmark may not exist yet.
+			pendingPage = number;
+		}
+	}
+
+	async function toggleBookmark() {
+		if (!totalPages || bookmarkBusy) return;
+
+		const number = currentPage;
+		const before = bookmarks;
+		bookmarkBusy = true;
+		bookmarkError = '';
+
+		try {
+			if (before.includes(number)) {
+				const remaining = before.filter((n) => n !== number);
+				bookmarks = remaining;
+				await removeBookmark(bookId, number, remaining, appBookmark);
+				if (appBookmark === number) appBookmark = remaining.length ? remaining[remaining.length - 1] : null;
+			} else {
+				bookmarks = [...before, number].sort((a, b) => a - b);
+				await addBookmark(bookId, number);
+				appBookmark = number;
+			}
+		} catch (err) {
+			console.error('Could not change the bookmark:', err);
+			bookmarks = before;
+			bookmarkError = 'Could not save the bookmark. Please try again.';
+		} finally {
+			bookmarkBusy = false;
+		}
+	}
+
+	/** @param {number} number */
+	async function deleteBookmark(number) {
+		const before = bookmarks;
+		const remaining = before.filter((n) => n !== number);
+		bookmarks = remaining;
+		bookmarkError = '';
+
+		try {
+			await removeBookmark(bookId, number, remaining, appBookmark);
+			if (appBookmark === number) appBookmark = remaining.length ? remaining[remaining.length - 1] : null;
+		} catch (err) {
+			console.error('Could not remove the bookmark:', err);
+			bookmarks = before;
+			bookmarkError = 'Could not remove the bookmark. Please try again.';
+		}
+	}
+
+	/** @param {KeyboardEvent} event */
+	function onKey(event) {
+		if (event.key === 'Escape') showBookmarks = false;
+	}
+
 	async function persist() {
 		if (!bookId || totalPages === 0) return;
 
@@ -145,6 +232,7 @@
 </script>
 
 <svelte:head><title>{book?.title ?? 'Reading'} · GD-Library</title></svelte:head>
+<svelte:window on:keydown={onKey} />
 
 <div class="reader">
 	<div class="bar">
@@ -155,7 +243,59 @@
 				Page {currentPage} of {totalPages} · {Math.round(percentage)}%
 			{/if}
 		</span>
+		{#if totalPages}
+			<button
+				type="button"
+				class="btn secondary small"
+				class:marked={currentMarked}
+				on:click={toggleBookmark}
+				disabled={bookmarkBusy}
+				aria-pressed={currentMarked}
+				title={currentMarked ? `Remove the bookmark on page ${currentPage}` : `Bookmark page ${currentPage}`}
+			>
+				<Icon name="bookmark" />{currentMarked ? 'Bookmarked' : 'Bookmark'}
+			</button>
+			<div class="marks">
+				<button
+					type="button"
+					class="btn secondary small"
+					on:click={() => (showBookmarks = !showBookmarks)}
+					aria-expanded={showBookmarks}
+					aria-controls="bookmark-list"
+				>
+					<Icon name="list" />Bookmarks ({bookmarks.length})
+				</button>
+				{#if showBookmarks}
+					<div class="panel" id="bookmark-list">
+						{#if bookmarks.length === 0}
+							<p class="muted">No bookmarks yet. Press "Bookmark" to mark the page you are on.</p>
+						{:else}
+							<ul>
+								{#each bookmarks as number (number)}
+									<li class:here={number === currentPage}>
+										<button type="button" class="jump" on:click={() => goToPage(number)}>
+											Page {number}
+										</button>
+										<button
+											type="button"
+											class="remove"
+											on:click={() => deleteBookmark(number)}
+											aria-label="Remove the bookmark on page {number}"
+										>
+											<Icon name="x" />
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		{/if}
 	</div>
+
+	{#if bookmarkError}<p class="page error">{bookmarkError}</p>{/if}
+	{#if pendingPage}<p class="page muted">Opening page {pendingPage}… it is still loading.</p>{/if}
 
 	{#if loading}
 		<p class="page muted">Opening the book…</p>
@@ -198,6 +338,80 @@
 		white-space: nowrap;
 	}
 
+	.small {
+		min-height: 36px;
+		padding: 6px 12px;
+		font-size: 0.875rem;
+	}
+
+	.marked {
+		background: var(--brand);
+		color: #fff;
+	}
+
+	.marks {
+		position: relative;
+	}
+
+	.panel {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 8px);
+		width: 240px;
+		max-height: 60vh;
+		overflow-y: auto;
+		padding: 8px;
+		background: #fff;
+		border: 2px solid var(--ink);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+	}
+
+	.panel .muted {
+		margin: 4px;
+	}
+
+	.panel ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.panel li {
+		display: flex;
+		align-items: center;
+	}
+
+	.panel li.here .jump {
+		font-weight: 700;
+		color: var(--brand);
+	}
+
+	.jump {
+		flex: 1;
+		text-align: left;
+		padding: 10px 8px;
+		background: none;
+		border: none;
+		font: inherit;
+		color: var(--ink);
+		cursor: pointer;
+	}
+
+	.jump:hover,
+	.jump:focus-visible {
+		background: var(--tint);
+	}
+
+	.remove {
+		display: flex;
+		align-items: center;
+		padding: 8px;
+		background: none;
+		border: none;
+		color: var(--danger);
+		cursor: pointer;
+	}
+
 	.pages {
 		display: flex;
 		flex-direction: column;
@@ -207,6 +421,8 @@
 	}
 
 	.pages :global(canvas) {
+		/* Clears the sticky bar when a bookmark scrolls a page to the top. */
+		scroll-margin-top: 72px;
 		max-width: 100%;
 		height: auto;
 		border: 1px solid var(--border);

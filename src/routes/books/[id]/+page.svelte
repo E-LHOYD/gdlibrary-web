@@ -1,5 +1,6 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
+	import BookCover from '$lib/components/BookCover.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { doc, getDoc } from 'firebase/firestore';
@@ -155,9 +156,8 @@
 		<p class="error">{error}</p>
 	{:else}
 		<div class="head">
-			{#if book.coverUrl}
-				<img class="cover" src={book.coverUrl} alt="Cover of {book.title}" />
-			{/if}
+			<!-- The uploaded cover, or the book's first page when it has none. -->
+			<BookCover {book} width={180} />
 			<div class="meta">
 				<h1 class="page-title title">{book.title}</h1>
 				<p class="author">{book.author}</p>
@@ -259,12 +259,6 @@
 		gap: 24px;
 		flex-wrap: wrap;
 		align-items: flex-start;
-	}
-
-	.cover {
-		width: 180px;
-		border: 2px solid var(--ink);
-		flex-shrink: 0;
 	}
 
 	.meta {
