@@ -94,12 +94,22 @@ export function fullName(user) {
 		.join(' ');
 }
 
-/** The interests a user chose at signup. */
+/**
+ * The interests on a user document, however they were written: a list of
+ * names (what the app, the web and the dashboard write now), a single
+ * comma-separated string, or a map of name to true.
+ * @param {any} user
+ * @returns {string[]}
+ */
 export function userInterests(user) {
-	if (!Array.isArray(user?.interests)) return [];
-	return user.interests
-		.filter((i) => typeof i === 'string' && i.trim())
-		.map((i) => i.trim());
+	const raw = user?.interests;
+	let list = [];
+
+	if (Array.isArray(raw)) list = raw;
+	else if (typeof raw === 'string') list = raw.split(',');
+	else if (raw && typeof raw === 'object') list = Object.keys(raw).filter((k) => raw[k]);
+
+	return list.filter((i) => typeof i === 'string' && i.trim()).map((i) => i.trim());
 }
 
 /** True if the user is a teacher. */

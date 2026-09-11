@@ -5,14 +5,15 @@
 	// open the library rather than left with a list ranked on their strand alone.
 	//
 	// There is no way to dismiss it: three interests are required, and the box
-	// stays until they are saved. It is shown only while the account has fewer
-	// than three: once they are saved it never appears again for that account,
-	// on any device, here or in the app.
+	// stays until they are saved. It is shown only to an account with no
+	// interests at all; an account that has any never sees it, on any device,
+	// here or in the app, and changes them from the profile instead.
 
 	import Icon from '$lib/components/Icon.svelte';
-	import { updateDoc } from 'firebase/firestore';
+	import { getDocFromServer, updateDoc } from 'firebase/firestore';
 	import { session, findProfileRef } from '$lib/stores/session.js';
 	import { DEFAULT_SUBJECTS } from '$lib/services/subjects.js';
+	import { userInterests } from '$lib/services/users.js';
 
 	const REQUIRED_INTERESTS = 3;
 
@@ -30,29 +31,65 @@
 	$: if ($session.user?.uid !== doneFor) done = false;
 
 	$: profile = $session.profile;
-	$: current = Array.isArray(profile?.interests)
-		? profile.interests.filter((i) => typeof i === 'string' && i.trim())
-		: [];
+	$: current = userInterests(profile);
 
 	// Only once the profile has actually been read, and only for an account that
 	// has one: a missing profile is something to tell the administrator, not a
 	// reason to write interests into a document that does not exist.
-	$: open = Boolean(
+	// What the session says. Not enough on its own to open the box: it is only
+	// the reason to go and check.
+	$: looksEmpty = Boolean(
 		!done &&
 			$session.user &&
 			$session.profileReady &&
 			profile &&
-			current.length < REQUIRED_INTERESTS
+			current.length === 0
 	);
 
-	// Starts from whatever the reader already has, so an account holding one or
-	// two keeps them.
-	let seeded = false;
-	$: if (open && !seeded) {
-		picked = current.filter((s) => DEFAULT_SUBJECTS.includes(s)).slice(0, REQUIRED_INTERESTS);
-		seeded = true;
+	// Checked with the server before the box appears, so it never flashes up
+	// for an account whose interests simply had not arrived yet. Opens only if
+	// the account's document, read fresh, really has none.
+	/** @type {string | null} */
+	let confirmedEmptyFor = null;
+	// One check per time the session looks empty, so a failing check is not
+	// retried in a loop.
+	/** @type {string | null} */
+	let checkedFor = null;
+
+	$: if (looksEmpty && checkedFor !== $session.user.uid) {
+		checkedFor = $session.user.uid;
+		confirmEmpty($session.user);
 	}
-	$: if (!open) seeded = false;
+	$: if (!looksEmpty) {
+		confirmedEmptyFor = null;
+		checkedFor = null;
+	}
+
+	/** @param {any} user */
+	async function confirmEmpty(user) {
+		try {
+			const ref = await findProfileRef(user);
+			const snapshot = ref ? await getDocFromServer(ref) : null;
+			const onServer = snapshot?.exists() ? userInterests(snapshot.data()) : null;
+
+			if (onServer && onServer.length === 0 && $session.user?.uid === user.uid) {
+				confirmedEmptyFor = user.uid;
+			} else if (onServer && onServer.length > 0) {
+				// The session copy was behind; bring it up to date.
+				session.update((s) =>
+					s.user?.uid === user.uid ? { ...s, profile: { ...s.profile, interests: onServer } } : s
+				);
+			}
+		} catch (err) {
+			// Offline or refused: no box rather than a wrong one.
+			console.error('Could not check the interests:', err);
+		}
+	}
+
+	$: open = looksEmpty && confirmedEmptyFor === $session.user?.uid;
+
+	// Starts empty each time it opens.
+	$: if (!open) picked = [];
 
 	/** @param {string} subject */
 	function toggle(subject) {

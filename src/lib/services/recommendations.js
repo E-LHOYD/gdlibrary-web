@@ -115,6 +115,24 @@ export async function subjectsForTrack(track) {
 }
 
 /**
+ * The interests on a user document, however they were written: a list of
+ * names (what the app, the web and the dashboard write now), a single
+ * comma-separated string, or a map of name to true.
+ * @param {any} user
+ * @returns {string[]}
+ */
+export function interestList(user) {
+    const raw = user?.interests;
+    let list = [];
+
+    if (Array.isArray(raw)) list = raw;
+    else if (typeof raw === 'string') list = raw.split(',');
+    else if (raw && typeof raw === 'object') list = Object.keys(raw).filter((k) => raw[k]);
+
+    return list.filter((i) => typeof i === 'string' && i.trim()).map((i) => i.trim());
+}
+
+/**
  * The interests a student chose, as subjects a book can actually carry.
  *
  * Anything that cannot be matched to a subject is dropped, so it neither ranks
@@ -124,11 +142,9 @@ export async function subjectsForTrack(track) {
  * @returns {string[]}
  */
 export function interestSubjects(user) {
-    if (!Array.isArray(user?.interests)) return [];
-
     const out = [];
 
-    for (const raw of user.interests) {
+    for (const raw of interestList(user)) {
         if (typeof raw !== 'string') continue;
 
         const text = raw.trim().toLowerCase();

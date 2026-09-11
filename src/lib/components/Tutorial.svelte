@@ -11,6 +11,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { tick } from 'svelte';
 	import { session } from '$lib/stores/session.js';
+	import { userInterests } from '$lib/services/users.js';
 	import { tutorialRequested } from '$lib/stores/tutorial.js';
 
 	// Illustrations of each part of the site, with the thing being described
@@ -99,9 +100,7 @@
 	let dismissedFor = null;
 
 	$: profile = $session.profile;
-	$: interestCount = Array.isArray(profile?.interests)
-		? profile.interests.filter((i) => typeof i === 'string' && i.trim()).length
-		: 0;
+	$: interestCount = userInterests(profile).length;
 
 	// Waits for the account to have its interests, so on a new account it
 	// follows the "Choose your interests" box rather than opening over it.
@@ -109,7 +108,7 @@
 		$session.user &&
 			$session.profileReady &&
 			profile &&
-			interestCount >= 3 &&
+			interestCount > 0 &&
 			dismissedFor !== $session.user.uid &&
 			!seenHere($session.user.uid)
 	);

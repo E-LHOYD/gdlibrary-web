@@ -4,7 +4,7 @@
 	import { onSnapshot, updateDoc } from 'firebase/firestore';
 	import { session, findProfileRef } from '$lib/stores/session.js';
 	import { DEFAULT_SUBJECTS } from '$lib/services/subjects.js';
-	import { isTeacher } from '$lib/services/users.js';
+	import { isTeacher, userInterests } from '$lib/services/users.js';
 	import { studentLevel } from '$lib/services/yearLevels.js';
 	import { openTutorial } from '$lib/stores/tutorial.js';
 
@@ -89,7 +89,7 @@
 	// Follows the live profile whenever the reader is not mid-edit, so a change
 	// saved elsewhere shows at once, but ticks being made are never overwritten.
 	$: if (profile && !editing) {
-		interests = Array.isArray(profile.interests) ? [...profile.interests] : [];
+		interests = userInterests(profile);
 	}
 
 	/** @param {string} subject */
@@ -102,7 +102,7 @@
 	}
 
 	function cancel() {
-		interests = Array.isArray(profile?.interests) ? [...profile.interests] : [];
+		interests = userInterests(profile);
 		editing = false;
 		error = '';
 	}

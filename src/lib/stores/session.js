@@ -1,12 +1,17 @@
 // Who is signed in, and their Firestore profile.
 //
 // The app reads the profile in every component that needs it; on the web one
-// store is loaded once and shared, so a page can render as soon as it has what
-// it needs rather than each doing its own round trip.
+// store holds it and is shared, so a page can render as soon as it has what it
+// needs rather than each doing its own round trip.
+//
+// The profile is watched, not read once. It used to be read at sign-in and
+// then left alone, so interests saved from the mobile app (or by the admin)
+// never reached an open tab: its copy still said "no interests", and the
+// "Choose your interests" box kept appearing for an account that had them.
 
 import { writable, derived } from 'svelte/store';
 import { onAuthStateChanged, signOut as fbSignOut } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, onSnapshot, query, where } from 'firebase/firestore';
 import { auth, db } from '$lib/firebase';
 import { sessionHasLapsed, startActivityTracking } from '$lib/services/persistence.js';
 
@@ -61,6 +66,10 @@ export function startSession() {
 	// in"; someone signing in on this page has just proved who they are.
 	let checkedOpeningUser = false;
 
+	/** Stops watching the previous account's profile. */
+	/** @type {(() => void) | null} */
+	let stopWatching = null;
+
 	onAuthStateChanged(auth, async (user) => {
 		const opening = !checkedOpeningUser;
 		checkedOpeningUser = true;
@@ -79,6 +88,9 @@ export function startSession() {
 
 		startActivityTracking();
 
+		stopWatching?.();
+		stopWatching = null;
+
 		if (!user) {
 			session.set({ loading: false, user: null, profile: null, profileReady: false });
 			return;
@@ -92,23 +104,70 @@ export function startSession() {
 		// ones did not.
 		session.set({ loading: false, user, profile: null, profileReady: false });
 
-		let profile = null;
+		// Ignored if someone signed out, or signed in as someone else, while a
+		// read was in flight: that newer state is the true one.
+		const publish = (/** @type {any} */ profile) =>
+			session.update((current) =>
+				current.user?.uid === user.uid ? { ...current, profile, profileReady: true } : current
+			);
 
 		try {
 			const ref = await findProfileRef(user);
-			const snapshot = ref ? await getDoc(ref) : null;
-			profile = snapshot?.exists() ? snapshot.data() : null;
-		} catch (error) {
-			// A missing or unreadable profile should not lock anyone out; pages
-			// that need it say so themselves.
-			console.error('Could not read the user profile:', error);
-		}
+			if (auth.currentUser?.uid !== user.uid) return;
 
-		// Ignored if someone signed out, or signed in as someone else, while
-		// this was in flight: that newer state is the true one.
-		session.update((current) =>
-			current.user?.uid === user.uid ? { ...current, profile, profileReady: true } : current
-		);
+			if (!ref) {
+				publish(null);
+				return;
+			}
+
+			// Every change to the document, wherever it was made, lands here.
+			//
+			// Nothing is published until Firestore has answered from the server.
+			// Before that, a snapshot can come from the local cache, and the
+			// cache can hold only this tab's own pending write (the lastSeenAt
+			// stamp from presence.js) with none of the profile: that briefly
+			// looked like an account with no interests, and "Choose your
+			// interests" flashed up. Pages wait on profileReady, which only a
+			// server-confirmed snapshot sets.
+			//
+			// Offline, the server never answers; after a few seconds the best
+			// copy there is gets published, so the site still works.
+			let confirmed = false;
+			/** @type {any} */
+			let latest = null;
+			const fallback = setTimeout(() => {
+				if (!confirmed && latest) {
+					confirmed = true;
+					publish(latest.exists() ? latest.data() : null);
+				}
+			}, 8000);
+
+			const unsubscribe = onSnapshot(
+				ref,
+				{ includeMetadataChanges: true },
+				(snapshot) => {
+					latest = snapshot;
+					if (!confirmed && (snapshot.metadata.fromCache || snapshot.metadata.hasPendingWrites)) return;
+					confirmed = true;
+					clearTimeout(fallback);
+					publish(snapshot.exists() ? snapshot.data() : null);
+				},
+				(error) => {
+					// A missing or unreadable profile should not lock anyone out;
+					// pages that need it say so themselves.
+					console.error('Could not watch the user profile:', error);
+					clearTimeout(fallback);
+					publish(null);
+				}
+			);
+			stopWatching = () => {
+				clearTimeout(fallback);
+				unsubscribe();
+			};
+		} catch (error) {
+			console.error('Could not read the user profile:', error);
+			publish(null);
+		}
 	});
 }
 
