@@ -5,11 +5,9 @@
 	// open the library rather than left with a list ranked on their strand alone.
 	//
 	// There is no way to dismiss it: three interests are required, and the box
-	// stays until they are saved.
-	//
-	// It is asked once per account. Saving also writes interestsPrompted: true to
-	// the user document, and an account carrying that flag is never asked again,
-	// on the web or in the app, whatever happens to its interests afterwards.
+	// stays until they are saved. It is shown only while the account has fewer
+	// than three: once they are saved it never appears again for that account,
+	// on any device, here or in the app.
 
 	import Icon from '$lib/components/Icon.svelte';
 	import { updateDoc } from 'firebase/firestore';
@@ -44,7 +42,6 @@
 			$session.user &&
 			$session.profileReady &&
 			profile &&
-			!profile.interestsPrompted &&
 			current.length < REQUIRED_INTERESTS
 	);
 
@@ -81,7 +78,7 @@
 			if (!ref) throw new Error('No profile document for this account');
 
 			const interests = [...picked];
-			await updateDoc(ref, { interests, interestsPrompted: true });
+			await updateDoc(ref, { interests });
 			done = true;
 			doneFor = $session.user.uid;
 
@@ -90,7 +87,7 @@
 			// "Recommended for you" straight away.
 			session.update((s) => ({
 				...s,
-				profile: { ...s.profile, interests, interestsPrompted: true }
+				profile: { ...s.profile, interests }
 			}));
 		} catch (err) {
 			console.error('Could not save interests:', err);

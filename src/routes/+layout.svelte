@@ -15,7 +15,7 @@
 
 	$: isPublic = PUBLIC.includes($page.url.pathname);
 
-	// Which bottom tab a page belongs to. The Library tab covers everything
+	// Which main section a page belongs to. The Library tab covers everything
 	// reached from it (subjects, browsing, search, a book), as in the app.
 	$: path = $page.url.pathname;
 	$: section = path.startsWith('/shelf')
@@ -60,6 +60,20 @@
 					<span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>GD-Library
 				</a>
 				{#if $session.user}
+					<!-- The three main sections, as in the mobile app's bottom bar,
+					     with the one this page belongs to highlighted. -->
+					<nav class="tabs" aria-label="Main">
+						<a href="/library" class:on={section === 'library'} aria-current={section === 'library' ? 'page' : undefined}>
+							<span class="tab-icon" aria-hidden="true">📚</span>Library
+						</a>
+						<a href="/shelf" class:on={section === 'shelf'} aria-current={section === 'shelf' ? 'page' : undefined}>
+							<span class="tab-icon" aria-hidden="true">📖</span>My Shelf
+						</a>
+						<a href="/profile" class:on={section === 'profile'} aria-current={section === 'profile' ? 'page' : undefined}>
+							<span class="tab-icon" aria-hidden="true">👤</span>Profile
+						</a>
+					</nav>
+
 					<div class="account">
 						<a href="/settings" class="link-btn" class:active={$page.url.pathname === '/settings'}>
 							<Icon name="settings" />Settings
@@ -73,25 +87,6 @@
 	{/if}
 
 	<slot />
-
-	{#if $session.user && !path.startsWith('/read/')}
-		<!-- The mobile app's Library / My Shelf / Profile bar, fixed to the
-		     bottom, with the section the page belongs to highlighted. Left off
-		     the reader, which needs the whole screen, as in the app. -->
-		<nav class="tabs" aria-label="Main">
-			<div class="tabs-inner">
-				<a href="/library" class:on={section === 'library'} aria-current={section === 'library' ? 'page' : undefined}>
-					<span class="tab-icon" aria-hidden="true">📚</span>Library
-				</a>
-				<a href="/shelf" class:on={section === 'shelf'} aria-current={section === 'shelf' ? 'page' : undefined}>
-					<span class="tab-icon" aria-hidden="true">📖</span>My Shelf
-				</a>
-				<a href="/profile" class:on={section === 'profile'} aria-current={section === 'profile' ? 'page' : undefined}>
-					<span class="tab-icon" aria-hidden="true">👤</span>Profile
-				</a>
-			</div>
-		</nav>
-	{/if}
 
 	<InterestsPrompt />
 	<Tutorial />
@@ -166,42 +161,28 @@
 		font-weight: 700;
 	}
 
-	/* ---------- bottom tabs ---------- */
+	/* ---------- main sections ---------- */
 
 	.tabs {
-		position: fixed;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 50;
-		padding: 0 20px 20px 20px;
-		pointer-events: none;
-	}
-
-	.tabs-inner {
-		max-width: 560px;
-		margin: 0 auto;
 		display: flex;
 		gap: 4px;
 		padding: 4px;
 		background: var(--brand);
 		border-radius: 8px;
-		box-shadow: 0 6px 18px rgba(3, 48, 71, 0.25);
-		pointer-events: auto;
 	}
 
 	.tabs a {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		gap: 4px;
-		min-height: 60px;
+		gap: 8px;
+		min-width: 120px;
+		min-height: 44px;
+		padding: 0 16px;
 		background: #fff;
 		color: var(--brand);
 		border-radius: 4px;
-		font-size: 0.8rem;
+		font-size: 0.9rem;
 		font-weight: 700;
 		text-decoration: none;
 	}
@@ -216,7 +197,25 @@
 	}
 
 	.tab-icon {
-		font-size: 1.25rem;
+		font-size: 1.1rem;
 		line-height: 1;
+	}
+
+	/* On a phone the sections take a line of their own, full width, under the
+	   logo and the Settings / Sign out links. */
+	@media (max-width: 700px) {
+		.tabs {
+			order: 3;
+			width: 100%;
+		}
+
+		.tabs a {
+			flex: 1;
+			min-width: 0;
+			flex-direction: column;
+			gap: 2px;
+			min-height: 56px;
+			font-size: 0.8rem;
+		}
 	}
 </style>

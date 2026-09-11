@@ -1,16 +1,16 @@
 <script>
 	// A short tour of the site, one card at a time.
 	//
-	// It opens on its own once, for a new account, straight after the reader
-	// picks their three interests (the interests prompt sets interestsPrompted).
-	// Finishing or skipping it writes tutorialSeen: true to the user document,
-	// so it is not shown again automatically, here or in the app. The "?" on the
-	// profile page opens it again at any time.
+	// It opens on its own the first time an account is used on this browser:
+	// for a new account straight after the reader picks their three interests,
+	// and for an existing account when they sign in on a new device. Finishing
+	// or skipping it is remembered in this browser, per account, so signing in
+	// again here does not bring it back. The "?" on the profile page opens it
+	// again at any time.
 
 	import Icon from '$lib/components/Icon.svelte';
 	import { tick } from 'svelte';
-	import { updateDoc } from 'firebase/firestore';
-	import { session, findProfileRef } from '$lib/stores/session.js';
+	import { session } from '$lib/stores/session.js';
 	import { tutorialRequested } from '$lib/stores/tutorial.js';
 
 	// Illustrations of each part of the site, with the thing being described
@@ -69,12 +69,33 @@
 	];
 
 	let step = 0;
-	let saving = false;
+
+	// Remembered per account in this browser. A browser that cannot store it
+	// (private windows in some browsers) shows the tour at each sign-in.
+	/** @param {string} uid */
+	const seenKey = (uid) => `gdl.tutorialSeen.${uid}`;
+
+	/** @param {string} uid */
+	function seenHere(uid) {
+		try {
+			return localStorage.getItem(seenKey(uid)) === 'true';
+		} catch {
+			return false;
+		}
+	}
+
+	/** @param {string} uid */
+	function markSeenHere(uid) {
+		try {
+			localStorage.setItem(seenKey(uid), 'true');
+		} catch {
+			// Nothing to remember with; it shows once more next time.
+		}
+	}
 	/** @type {HTMLDivElement} */
 	let box;
 
-	// Closed for the rest of the visit once dismissed, before the session even
-	// reflects the saved flag.
+	// Closed for the rest of the visit once dismissed.
 	let dismissedFor = null;
 
 	$: profile = $session.profile;
@@ -82,13 +103,15 @@
 		? profile.interests.filter((i) => typeof i === 'string' && i.trim()).length
 		: 0;
 
+	// Waits for the account to have its interests, so on a new account it
+	// follows the "Choose your interests" box rather than opening over it.
 	$: firstTime = Boolean(
 		$session.user &&
 			$session.profileReady &&
-			profile?.interestsPrompted &&
-			!profile?.tutorialSeen &&
+			profile &&
 			interestCount >= 3 &&
-			dismissedFor !== $session.user.uid
+			dismissedFor !== $session.user.uid &&
+			!seenHere($session.user.uid)
 	);
 
 	$: open = Boolean($session.user) && ($tutorialRequested || firstTime);
@@ -104,29 +127,15 @@
 		}
 	}
 
-	async function close() {
+	function close() {
 		const auto = firstTime;
 		tutorialRequested.set(false);
 
 		if (!auto) return;
 
-		const user = $session.user;
-		dismissedFor = user.uid;
-		saving = true;
-
-		try {
-			const ref = await findProfileRef(user);
-			if (ref) await updateDoc(ref, { tutorialSeen: true });
-			session.update((s) =>
-				s.user?.uid === user.uid ? { ...s, profile: { ...s.profile, tutorialSeen: true } } : s
-			);
-		} catch (err) {
-			// Not worth interrupting the reader over: at worst the tour shows once
-			// more next time.
-			console.error('Could not record that the tour was seen:', err);
-		} finally {
-			saving = false;
-		}
+		const uid = $session.user.uid;
+		dismissedFor = uid;
+		markSeenHere(uid);
 	}
 
 	function next() {
@@ -166,7 +175,7 @@
 			<div class="top">
 				<span class="muted">Step {step + 1} of {STEPS.length}</span>
 				{#if !last}
-					<button type="button" class="link-btn" on:click={close} disabled={saving}>Skip tour</button>
+					<button type="button" class="link-btn" on:click={close}>Skip tour</button>
 				{/if}
 			</div>
 
@@ -181,10 +190,10 @@
 			</div>
 
 			<div class="row actions">
-				<button type="button" class="btn secondary" on:click={back} disabled={step === 0 || saving}>
+				<button type="button" class="btn secondary" on:click={back} disabled={step === 0}>
 					<Icon name="arrow-left" />Back
 				</button>
-				<button type="button" class="btn" on:click={next} disabled={saving}>
+				<button type="button" class="btn" on:click={next}>
 					{#if last}<Icon name="check" />Finish{:else}Next<Icon name="arrow-right" />{/if}
 				</button>
 			</div>

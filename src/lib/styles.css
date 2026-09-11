@@ -1,7 +1,7 @@
 /* The mobile app's look, taken from its Library screen: the light grey page,
    the logo bar and rule at the top, white rounded cards for books, shelves and
-   subjects, round-ended buttons, and the Library / My Shelf / Profile bar at
-   the bottom (in the layout). Written once here and imported by the layout, so
+   subjects, round-ended buttons, and the Library / My Shelf / Profile
+   sections (in the layout's header). Written once here and imported by the layout, so
    every page shares it rather than restating it. */
 
 :root {
@@ -38,8 +38,7 @@ a {
 .page {
 	max-width: 960px;
 	margin: 0 auto;
-	/* Room at the bottom for the fixed Library / My Shelf / Profile bar. */
-	padding: 20px 20px 120px 20px;
+	padding: 20px 20px 40px 20px;
 }
 
 .page-title {
