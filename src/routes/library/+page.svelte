@@ -89,8 +89,6 @@
 <svelte:head><title>Library · GD-Library</title></svelte:head>
 
 <div class="page">
-	<h1 class="page-title">Library</h1>
-
 	<form class="search" on:submit|preventDefault={submitSearch}>
 		<input type="search" placeholder="Search title, author or book number" bind:value={searchQuery} />
 		{#if searchQuery}
@@ -101,9 +99,9 @@
 		{/if}
 	</form>
 
-	<div class="chips">
-		<a class="chip" href="/subjects"><Icon name="list" />Subjects</a>
-		<a class="chip" href="/browse"><Icon name="grid" />Browse all</a>
+	<div class="pills">
+		<a class="pill" href="/subjects">Subjects</a>
+		<a class="pill" href="/browse">Browse all</a>
 	</div>
 
 	{#if loading}

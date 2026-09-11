@@ -362,7 +362,7 @@
 		overflow-y: auto;
 		padding: 8px;
 		background: #fff;
-		border: 2px solid var(--ink);
+		border-radius: var(--radius);
 		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 	}
 

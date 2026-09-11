@@ -159,7 +159,8 @@
 		overflow-y: auto;
 		padding: 24px;
 		background: #fff;
-		border: 2px solid var(--ink);
+		border-radius: 12px;
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 	}
 
 	h2 {

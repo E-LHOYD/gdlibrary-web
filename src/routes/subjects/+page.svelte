@@ -43,26 +43,28 @@
 <style>
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		gap: 2px;
-		border: 2px solid var(--ink);
-		background: var(--ink);
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		gap: 10px;
 	}
 
+	/* Cards, like the Library's book cards. */
 	.tile {
 		display: block;
-		padding: 18px;
+		padding: 18px 20px;
 		background: #fff;
+		border-radius: var(--radius);
+		box-shadow: var(--shadow);
 		text-decoration: none;
 		color: inherit;
 	}
 
 	.tile:hover {
-		background: var(--tint);
+		background: #f8f8f8;
 	}
 
 	.name {
 		display: block;
+		font-size: 1.125rem;
 		font-weight: 700;
 		color: var(--brand);
 		margin-bottom: 4px;

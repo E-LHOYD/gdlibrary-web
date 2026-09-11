@@ -128,10 +128,10 @@ export async function deleteReadingProgress(bookId) {
 // Kept on the same progress document as the reading position, as a list of
 // page numbers in `bookmarks`, so a reader can mark as many pages as they like.
 //
-// The mobile app keeps a single page in `bookmark`. That page is read as one
-// of the bookmarks here, and `bookmark` is kept pointing at the most recently
-// added page, so the app's "Go to bookmark" still takes the reader somewhere
-// they marked.
+// The mobile app reads and writes the same list. Older versions of the app
+// kept a single page in `bookmark`; that page is read as one of the bookmarks
+// here, and `bookmark` is kept pointing at the most recently added page, so an
+// app that has not been updated still finds a page the reader marked.
 
 /**
  * Every bookmarked page on a progress record, lowest first.

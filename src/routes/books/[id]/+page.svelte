@@ -285,25 +285,6 @@
 		max-width: 65ch;
 	}
 
-	.scrim {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
-	}
-
-	.modal {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: min(420px, calc(100vw - 40px));
-		max-height: 80vh;
-		overflow-y: auto;
-		background: #fff;
-		border: 2px solid var(--ink);
-		padding: 20px;
-	}
-
 	.top {
 		margin-top: 0;
 	}

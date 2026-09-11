@@ -1,0 +1,12 @@
+{
+	"name": "GD-Library",
+	"short_name": "GD-Library",
+	"icons": [
+		{ "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+		{ "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+	],
+	"start_url": "/library",
+	"display": "standalone",
+	"background_color": "#033047",
+	"theme_color": "#033047"
+}

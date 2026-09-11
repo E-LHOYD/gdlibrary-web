@@ -73,7 +73,9 @@
 <style>
 	.cover {
 		display: block;
-		border: 2px solid var(--ink);
+		border-radius: var(--radius);
+		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+		overflow: hidden;
 		flex-shrink: 0;
 		background: #fff;
 	}

@@ -213,31 +213,29 @@
 </div>
 
 <style>
+	/* Each detail its own card, label over value, as in the mobile app. */
 	.facts {
 		display: grid;
-		gap: 2px;
-		border: 2px solid var(--ink);
-		background: var(--ink);
+		gap: 10px;
 		margin: 0 0 12px 0;
 	}
 
 	.facts > div {
-		display: flex;
-		justify-content: space-between;
-		gap: 16px;
-		padding: 12px 14px;
+		padding: 16px 20px;
 		background: #fff;
+		border-radius: var(--radius);
+		box-shadow: var(--shadow);
 	}
 
 	dt {
-		color: var(--muted);
-		font-size: 0.875rem;
+		color: #666;
+		font-size: 0.8125rem;
+		margin-bottom: 2px;
 	}
 
 	dd {
 		margin: 0;
 		font-weight: 700;
-		text-align: right;
 	}
 
 	.spaced {

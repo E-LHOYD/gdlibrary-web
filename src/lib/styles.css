@@ -1,5 +1,7 @@
-/* The Modernist look from the app's redesign: navy accent, zero corner radius,
-   2px rules, flush-left type. Written once here and imported by the layout, so
+/* The mobile app's look, taken from its Library screen: the light grey page,
+   the logo bar and rule at the top, white rounded cards for books, shelves and
+   subjects, round-ended buttons, and the Library / My Shelf / Profile bar at
+   the bottom (in the layout). Written once here and imported by the layout, so
    every page shares it rather than restating it. */
 
 :root {
@@ -12,6 +14,8 @@
 	--muted: #6f6e6a;
 	--border: #cccccc;
 	--danger: #b3261e;
+	--radius: 8px;
+	--shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -34,20 +38,44 @@ a {
 .page {
 	max-width: 960px;
 	margin: 0 auto;
-	padding: 20px;
+	/* Room at the bottom for the fixed Library / My Shelf / Profile bar. */
+	padding: 20px 20px 120px 20px;
 }
 
 .page-title {
-	font-size: 2rem;
+	font-size: 1.75rem;
 	font-weight: 700;
-	margin: 0 0 24px 0;
+	margin: 0 0 16px 0;
 	letter-spacing: -0.01em;
 }
 
 .section-title {
-	font-size: 1.1rem;
+	font-size: 1.0625rem;
 	font-weight: 700;
-	margin: 32px 0 12px 0;
+	margin: 24px 0 10px 0;
+}
+
+/* ---------- cards ----------
+   A white rounded card, the same as a book card, for anything listed: a
+   shelf, a subject, a profile detail. */
+
+.card {
+	display: block;
+	padding: 16px 20px;
+	background: #fff;
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	text-decoration: none;
+	color: inherit;
+}
+
+a.card:hover {
+	background: #f8f8f8;
+}
+
+.card-list {
+	display: grid;
+	gap: 10px;
 }
 
 .muted {
@@ -72,7 +100,7 @@ a {
 	min-height: 48px;
 	padding: 8px 20px;
 	border: 2px solid var(--brand);
-	border-radius: 0;
+	border-radius: 999px;
 	background: var(--brand);
 	color: #fff;
 	font-size: 1rem;
@@ -92,6 +120,7 @@ a {
 .btn.secondary {
 	background: #fff;
 	color: var(--brand);
+	border-width: 3px;
 }
 
 .btn.secondary:hover:not(:disabled) {
@@ -229,23 +258,23 @@ textarea {
 
 .book-list {
 	display: grid;
-	gap: 2px;
-	border: 2px solid var(--ink);
-	background: var(--ink);
+	gap: 10px;
 }
 
 .book-item {
 	display: flex;
 	gap: 14px;
 	align-items: flex-start;
-	padding: 14px;
+	padding: 20px;
 	background: #fff;
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
 	text-decoration: none;
 	color: inherit;
 }
 
 .book-item:hover {
-	background: var(--tint);
+	background: #f8f8f8;
 }
 
 .book-cover {
@@ -262,13 +291,14 @@ textarea {
 }
 
 .book-title {
+	font-size: 1.125rem;
 	font-weight: 700;
 	color: var(--brand);
 	text-transform: capitalize;
 }
 
 .book-author {
-	color: var(--muted);
+	color: #666;
 	font-size: 0.875rem;
 }
 
@@ -288,8 +318,9 @@ textarea {
 .empty {
 	padding: 24px;
 	background: #fff;
-	border: 2px solid var(--border);
-	color: var(--muted);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	color: #666;
 }
 
 /* ---------- chips ---------- */
@@ -306,9 +337,10 @@ textarea {
 	align-items: center;
 	justify-content: center;
 	gap: 6px;
-	padding: 6px 12px;
+	padding: 6px 14px;
 	line-height: 1.2;
-	border: 1px solid var(--border);
+	border: 2px solid var(--brand);
+	border-radius: 999px;
 	background: #fff;
 	color: var(--brand);
 	font-size: 0.8125rem;
@@ -322,4 +354,60 @@ textarea {
 	border-color: var(--brand);
 	color: #fff;
 	font-weight: 700;
+}
+
+/* The Library screen's round-ended outline buttons (Subjects, Browse all), for
+   moving between parts of the site. */
+.pill {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-width: 150px;
+	padding: 10px 20px;
+	border: 4px solid var(--brand);
+	border-radius: 999px;
+	background: #fff;
+	color: var(--brand);
+	font-size: 1rem;
+	font-weight: 700;
+	font-family: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.pill:hover {
+	background: var(--tint);
+}
+
+.pills {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin: 0 0 16px 0;
+}
+
+/* ---------- dialogs ---------- */
+
+.scrim {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
+	background: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 61;
+	transform: translate(-50%, -50%);
+	width: min(420px, calc(100vw - 40px));
+	max-height: calc(100vh - 40px);
+	overflow-y: auto;
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+	padding: 20px;
 }
