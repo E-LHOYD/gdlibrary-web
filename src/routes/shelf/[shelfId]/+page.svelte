@@ -64,6 +64,9 @@
 	// to be worth saying out loud before doing it.
 	$: derived = shelfId === 'history' || shelfId === 'read' || shelfId === 'viewed';
 	$: removeLabel = derived ? 'Remove from history' : 'Remove from shelf';
+	// Reading history is a record of what was opened, so it is read-only here:
+	// no selecting, and nothing to remove.
+	$: canSelect = shelfId !== 'history';
 
 	$: activeSort = SORTS.find((s) => s.key === sortKey) ?? SORTS[0];
 	$: sorted = sortBooks(books, activeSort.accessor, direction);
@@ -267,7 +270,7 @@
 				{#if selecting}· {selectedIds.length} selected{/if}
 			</p>
 
-			{#if books.length > 0}
+			{#if books.length > 0 && canSelect}
 				<div class="row bar-actions">
 					{#if selecting}
 						<button
@@ -302,7 +305,7 @@
 			books={sorted}
 			showProgress
 			empty="Nothing on this shelf yet."
-			selectable={selecting}
+			selectable={selecting && canSelect}
 			{selectedIds}
 			onToggle={toggleSelected}
 		/>
@@ -345,23 +348,6 @@
 
 	.bar-actions {
 		gap: 8px;
-	}
-
-	.scrim {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
-	}
-
-	.modal {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: min(420px, calc(100vw - 40px));
-		background: #fff;
-		border: 2px solid var(--ink);
-		padding: 20px;
 	}
 
 	.top {

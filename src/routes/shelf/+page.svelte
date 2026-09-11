@@ -124,32 +124,37 @@
 <style>
 	.shelf-list {
 		display: grid;
-		gap: 2px;
-		border: 2px solid var(--ink);
-		background: var(--ink);
+		gap: 10px;
 	}
 
+	/* Cards, like the Library's book cards. */
 	.shelf {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		gap: 12px;
-		padding: 16px;
+		padding: 16px 20px;
 		background: #fff;
+		border-radius: var(--radius);
+		box-shadow: var(--shadow);
 		text-decoration: none;
 		color: inherit;
 	}
 
 	.shelf:hover {
-		background: var(--tint);
+		background: #f8f8f8;
 	}
 
 	.row-shelf {
 		padding: 0;
 	}
 
+	/* The link inside a shelf card that also has a Delete button: part of the
+	   card, not a second card inside it. */
 	.inner {
 		flex: 1;
+		box-shadow: none;
+		background: transparent;
 	}
 
 	.delete {
@@ -158,6 +163,7 @@
 	}
 
 	.name {
+		font-size: 1.125rem;
 		font-weight: 700;
 		color: var(--brand);
 	}
@@ -165,23 +171,6 @@
 	.grow {
 		flex: 1;
 		min-width: 200px;
-	}
-
-	.scrim {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
-	}
-
-	.modal {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: min(420px, calc(100vw - 40px));
-		background: #fff;
-		border: 2px solid var(--ink);
-		padding: 20px;
 	}
 
 	.top {

@@ -1,5 +1,6 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
+	import BookCover from '$lib/components/BookCover.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { doc, getDoc } from 'firebase/firestore';
@@ -134,7 +135,7 @@
 			shelves = [...shelves, withBook(shelf)];
 			resultBox = { title: 'Shelf created', text: `This book is now on ${shelf.name}.` };
 		} catch (err) {
-			// A duplicate name or the five-shelf limit lands here, and both are
+			// A duplicate name or the shelf limit lands here, and both are
 			// worth reading, so they go in the box rather than being swallowed.
 			resultBox = {
 				title: 'Could not create the shelf',
@@ -155,9 +156,8 @@
 		<p class="error">{error}</p>
 	{:else}
 		<div class="head">
-			{#if book.coverUrl}
-				<img class="cover" src={book.coverUrl} alt="Cover of {book.title}" />
-			{/if}
+			<!-- The uploaded cover, or the book's first page when it has none. -->
+			<BookCover {book} width={180} />
 			<div class="meta">
 				<h1 class="page-title title">{book.title}</h1>
 				<p class="author">{book.author}</p>
@@ -261,12 +261,6 @@
 		align-items: flex-start;
 	}
 
-	.cover {
-		width: 180px;
-		border: 2px solid var(--ink);
-		flex-shrink: 0;
-	}
-
 	.meta {
 		flex: 1;
 		min-width: 260px;
@@ -289,25 +283,6 @@
 	.detail {
 		line-height: 1.6;
 		max-width: 65ch;
-	}
-
-	.scrim {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
-	}
-
-	.modal {
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: min(420px, calc(100vw - 40px));
-		max-height: 80vh;
-		overflow-y: auto;
-		background: #fff;
-		border: 2px solid var(--ink);
-		padding: 20px;
 	}
 
 	.top {

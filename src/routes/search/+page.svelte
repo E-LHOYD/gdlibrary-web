@@ -36,7 +36,7 @@
 	<h1 class="page-title">Search</h1>
 
 	<form class="search" on:submit|preventDefault={submitSearch}>
-		<input type="search" placeholder="Search title or author" bind:value={queryInput} />
+		<input type="search" placeholder="Search title, author or book number" bind:value={queryInput} />
 		{#if queryInput}
 			<button type="button" class="btn secondary" on:click={() => (queryInput = '')}>
 				<Icon name="x" />Clear

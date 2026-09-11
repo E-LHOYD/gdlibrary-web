@@ -1,7 +1,7 @@
 // Choosing the order the library is shown in.
 //
-// recommendBooks filters as well as ranks, which is right for the
-// recommendations page and wrong for the library: a student browsing the
+// recommendBooks filters as well as ranks, which is right for a list of
+// recommendations and wrong for the library as a whole: a student browsing the
 // library should still be able to reach every book. So the library ranks with
 // the same scoring but keeps everything.
 

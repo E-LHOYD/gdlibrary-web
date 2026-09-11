@@ -12,15 +12,16 @@ made here is the same shelf there.
 | --- | --- | --- |
 | Welcome | `/` | Sends a signed-in visitor straight to the library |
 | Sign in | `/login` | Includes the forgot-password email |
-| Library | `/library` | Every book, ordered by how well it fits the reader |
+| Library | `/library` | Books recommended for the reader first, then the rest of the library |
 | Browse all | `/browse` | The plain list, with search |
 | Subjects | `/subjects`, `/subjects/[subject]` | Grouped by the dashboard's subject list |
-| Search | `/search?q=` | Title or author, every term must match |
-| Book | `/books/[id]` | Cover, details, shelves, and where reading starts |
-| Reader | `/read/[id]` | pdf.js, saving progress as you scroll |
-| My shelf | `/shelf` | Reading history, Read, Viewed and up to five of your own |
+| Search | `/search?q=` | Book number, title or author, every term must match |
+| Book | `/books/[id]` | Cover (or the book's first page when there is none), details, shelves |
+| Reader | `/read/[id]` | pdf.js, saving progress as you scroll; bookmark any number of pages and jump back to them |
+| My shelf | `/shelf` | Reading history, Read, Viewed and up to ten of your own |
 | A shelf | `/shelf/[shelfId]` | Sortable by title, author, progress, published date, last opened |
-| Profile | `/profile` | Details, reading counts, editable interests, password reset |
+| Profile | `/profile` | Username, program, year level, reading counts, and editable interests |
+| Settings | `/settings` | Keep me logged in, and changing the password (current password required) |
 
 ## How the code is laid out
 
@@ -31,8 +32,11 @@ recommendations work can be made in one place and copied to the other rather
 than reinvented. The only difference is the Firebase call style: the app uses
 the NativeScript plugin's namespaced API, the web uses the modular SDK.
 
-`order.js` is web-only. It scores the whole library based on the user's profile
-and puts what would be filtered out underneath instead of removing it.
+The library page leads with `recommendBooks`: year level filters, subjects
+filter and rank, interests counting double a strand's or course's subjects.
+Below that it lists every other book, so nothing in the library is out of
+reach. `order.js` (`rankOrRecommend`) is the web-only helper that scores a whole
+list without dropping anything.
 
 ## Running it
 
