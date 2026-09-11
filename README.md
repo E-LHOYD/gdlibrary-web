@@ -12,7 +12,6 @@ made here is the same shelf there.
 | --- | --- | --- |
 | Welcome | `/` | Sends a signed-in visitor straight to the library |
 | Sign in | `/login` | Includes the forgot-password email |
-| Register | `/register` | Student (senior high / college) or teacher, three interests |
 | Library | `/library` | Every book, ordered by how well it fits the reader |
 | Browse all | `/browse` | The plain list, with search |
 | Subjects | `/subjects`, `/subjects/[subject]` | Grouped by the dashboard's subject list |
@@ -21,7 +20,6 @@ made here is the same shelf there.
 | Reader | `/read/[id]` | pdf.js, saving progress as you scroll |
 | My shelf | `/shelf` | Reading history, Read, Viewed and up to five of your own |
 | A shelf | `/shelf/[shelfId]` | Sortable by title, author, progress, published date, last opened |
-| For you | `/recommendations` | Year level filters, interests rank |
 | Profile | `/profile` | Details, reading counts, editable interests, password reset |
 
 ## How the code is laid out
@@ -33,10 +31,8 @@ recommendations work can be made in one place and copied to the other rather
 than reinvented. The only difference is the Firebase call style: the app uses
 the NativeScript plugin's namespaced API, the web uses the modular SDK.
 
-`order.js` is web-only. `recommendBooks` filters as well as ranks, which is
-right for the For-you page and wrong for the library, where every book should
-still be reachable. `rankOrRecommend` scores the whole library and puts what
-the filter would have dropped underneath instead of removing it.
+`order.js` is web-only. It scores the whole library based on the user's profile
+and puts what would be filtered out underneath instead of removing it.
 
 ## Running it
 

@@ -29,7 +29,6 @@
 			<p>Your personal digital library at your fingertips</p>
 			<div class="actions">
 				<a href="/login" class="btn btn-primary"><Icon name="log-in" />Login</a>
-				<a href="/register" class="btn btn-secondary"><Icon name="user-plus" />Register</a>
 			</div>
 		</div>
 	</main>

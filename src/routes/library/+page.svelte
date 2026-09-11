@@ -75,7 +75,6 @@
 	<div class="chips">
 		<a class="chip" href="/subjects"><Icon name="list" />Subjects</a>
 		<a class="chip" href="/browse"><Icon name="grid" />Browse all</a>
-		<a class="chip" href="/recommendations"><Icon name="star" />For you</a>
 	</div>
 
 	{#if loading}

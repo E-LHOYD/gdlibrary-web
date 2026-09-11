@@ -11,8 +11,7 @@
 	import { studentLevel } from '$lib/services/yearLevels.js';
 	import { getAllReadingProgress } from '$lib/services/readingProgress.js';
 
-	// Signup asks for exactly three, and the recommendation weighting assumes a
-	// small deliberate set rather than a checklist, so editing keeps the rule.
+	// Signup asks for exactly three, so editing keeps the rule.
 	const REQUIRED_INTERESTS = 3;
 
 	/** @type {string[]} */
@@ -81,7 +80,7 @@
 			session.update((s) => ({ ...s, profile: { ...s.profile, interests: [...interests] } }));
 
 			editing = false;
-			message = 'Interests saved. Your recommendations will use them from now on.';
+			message = 'Interests saved.';
 		} catch (err) {
 			console.error('Could not save interests:', err);
 			error = 'Could not save your interests. Please try again.';

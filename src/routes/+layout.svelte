@@ -9,7 +9,7 @@
 	import { isFirebaseConfigured } from '$lib/firebase';
 
 	// Pages a signed-out visitor is allowed to see.
-	const PUBLIC = ['/', '/login', '/register'];
+	const PUBLIC = ['/', '/login'];
 
 	$: isPublic = PUBLIC.includes($page.url.pathname);
 	$: needsSignIn = !$session.loading && !$session.user && !isPublic;
@@ -46,9 +46,6 @@
 			<nav>
 				<a href="/library" class:active={$page.url.pathname === '/library'}>Library</a>
 				<a href="/subjects" class:active={$page.url.pathname.startsWith('/subjects')}>Subjects</a>
-				<a href="/recommendations" class:active={$page.url.pathname === '/recommendations'}>
-					For you
-				</a>
 				<a href="/shelf" class:active={$page.url.pathname.startsWith('/shelf')}>My shelf</a>
 				<a href="/profile" class:active={$page.url.pathname === '/profile'}>Profile</a>
 			</nav>

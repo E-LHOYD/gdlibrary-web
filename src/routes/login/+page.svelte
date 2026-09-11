@@ -158,8 +158,6 @@
 			<Icon name="log-in" />{busy ? 'Signing in…' : 'Log in'}
 		</button>
 	</form>
-
-	<p class="muted foot">No account yet? <a href="/register">Register</a></p>
 </div>
 
 <style>

@@ -1,6 +1,6 @@
 // Reading a user document without caring which half of the system wrote it.
 //
-// The mobile signup and this dashboard's register page grew up separately and
+// The mobile signup and the dashboard's register page grew up separately and
 // disagree on two fields:
 //
 //   role         the app writes 'student', the dashboard wrote 'Student'
@@ -9,9 +9,9 @@
 //
 // Each page then filtered on whichever spelling it knew, so the student list
 // could not see anyone who signed up in the app, and analytics counted zero
-// students for anyone registered from the dashboard. Register now writes the
-// app's shape, but documents in both shapes already exist and always will, so
-// everything reads users through here.
+// students for anyone registered from the dashboard. The dashboard's register now
+// writes the app's shape, but documents in both shapes already exist and always
+// will, so everything reads users through here.
 
 // What a teacher is attached to. Teachers have no year, course or student
 // number, so this and an employee number are all that stands in for the
