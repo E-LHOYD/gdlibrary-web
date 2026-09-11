@@ -13,22 +13,15 @@
 	<meta name="description" content="GD-Library - Your Digital Book Collection" />
 </svelte:head>
 
+<!-- The site header (logo bars, name and rule) comes from the layout, the
+     same as on every other page. -->
 <div class="container">
-	<header class="header">
-		<div class="logo">
-			<div class="bar bar-1"></div>
-			<div class="bar bar-2"></div>
-			<div class="bar bar-3"></div>
-		</div>
-		<h1 class="brand">GD-Library</h1>
-	</header>
-
 	<main class="main">
 		<div class="hero">
 			<h2>Welcome to GD-Library</h2>
 			<p>Your personal digital library at your fingertips</p>
 			<div class="actions">
-				<a href="/login" class="btn btn-primary"><Icon name="log-in" />Login</a>
+				<a href="/login" class="btn"><Icon name="log-in" />Log in</a>
 			</div>
 		</div>
 	</main>
@@ -39,54 +32,10 @@
 </div>
 
 <style>
-	:global(body) {
-		margin: 0;
-		padding: 0;
-		font-family: 'Archivo', sans-serif;
-		background-color: #f5f5f5;
-	}
-
 	.container {
-		min-height: 100vh;
+		min-height: calc(100vh - 80px);
 		display: flex;
 		flex-direction: column;
-	}
-
-	.header {
-		background-color: #033047;
-		color: white;
-		padding: 1rem 2rem;
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	.logo {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.bar {
-		width: 30px;
-		height: 4px;
-		background-color: white;
-		border-radius: 2px;
-	}
-
-	.bar-2 {
-		width: 20px;
-	}
-
-	.bar-3 {
-		width: 25px;
-		transform: rotate(8deg);
-	}
-
-	.brand {
-		margin: 0;
-		font-size: 1.5rem;
-		font-weight: bold;
 	}
 
 	.main {
@@ -104,7 +53,7 @@
 
 	.hero h2 {
 		font-size: 2.5rem;
-		color: #201e1d;
+		color: var(--ink);
 		margin-bottom: 1rem;
 	}
 
@@ -120,34 +69,11 @@
 		justify-content: center;
 	}
 
-	.btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-		padding: 0.75rem 2rem;
-		border-radius: 4px;
-		text-align: center;
-		text-decoration: none;
-		font-weight: bold;
-		line-height: 1.2;
-		transition: all 0.2s;
-	}
-
-	.btn-primary {
-		background-color: #033047;
-		color: white;
-	}
-
-	.btn-primary:hover {
-		background-color: #044066;
-	}
-
 	.footer {
-		background-color: #201e1d;
-		color: white;
 		text-align: center;
 		padding: 1rem;
+		color: var(--muted);
+		font-size: 0.875rem;
 		margin-top: auto;
 	}
 </style>

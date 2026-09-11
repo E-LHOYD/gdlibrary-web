@@ -51,40 +51,38 @@
 {:else if $session.loading}
 	<div class="page"><p class="muted">Loading…</p></div>
 {:else}
-	{#if $page.url.pathname !== '/'}
-		<!-- The same top as the mobile app: the logo bars and name, then a rule.
-		     The welcome page has its own. -->
-		<header class="top">
-			<div class="top-inner">
-				<a class="brand" href="/library">
-					<span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>GD-Library
-				</a>
-				{#if $session.user}
-					<!-- The three main sections, as in the mobile app's bottom bar,
-					     with the one this page belongs to highlighted. -->
-					<nav class="tabs" aria-label="Main">
-						<a href="/library" class:on={section === 'library'} aria-current={section === 'library' ? 'page' : undefined}>
-							<span class="tab-icon" aria-hidden="true">📚</span>Library
-						</a>
-						<a href="/shelf" class:on={section === 'shelf'} aria-current={section === 'shelf' ? 'page' : undefined}>
-							<span class="tab-icon" aria-hidden="true">📖</span>My Shelf
-						</a>
-						<a href="/profile" class:on={section === 'profile'} aria-current={section === 'profile' ? 'page' : undefined}>
-							<span class="tab-icon" aria-hidden="true">👤</span>Profile
-						</a>
-					</nav>
+	<!-- The same top as the mobile app: the logo bars and name, then a rule.
+	     On every page, including the welcome and login pages. -->
+	<header class="top">
+		<div class="top-inner">
+			<a class="brand" href={$session.user ? "/library" : "/"}>
+				<span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>GD-Library
+			</a>
+			{#if $session.user}
+				<!-- The three main sections, as in the mobile app's bottom bar,
+				     with the one this page belongs to highlighted. -->
+				<nav class="tabs" aria-label="Main">
+					<a href="/library" class:on={section === 'library'} aria-current={section === 'library' ? 'page' : undefined}>
+						<span class="tab-icon" aria-hidden="true">📚</span>Library
+					</a>
+					<a href="/shelf" class:on={section === 'shelf'} aria-current={section === 'shelf' ? 'page' : undefined}>
+						<span class="tab-icon" aria-hidden="true">📖</span>My Shelf
+					</a>
+					<a href="/profile" class:on={section === 'profile'} aria-current={section === 'profile' ? 'page' : undefined}>
+						<span class="tab-icon" aria-hidden="true">👤</span>Profile
+					</a>
+				</nav>
 
-					<div class="account">
-						<a href="/settings" class="link-btn" class:active={$page.url.pathname === '/settings'}>
-							<Icon name="settings" />Settings
-						</a>
-						<button class="link-btn" on:click={handleSignOut}><Icon name="log-out" />Sign out</button>
-					</div>
-				{/if}
-			</div>
-			<div class="rule"></div>
-		</header>
-	{/if}
+				<div class="account">
+					<a href="/settings" class="link-btn" class:active={$page.url.pathname === '/settings'}>
+						<Icon name="settings" />Settings
+					</a>
+					<button class="link-btn" on:click={handleSignOut}><Icon name="log-out" />Sign out</button>
+				</div>
+			{/if}
+		</div>
+		<div class="rule"></div>
+	</header>
 
 	<slot />
 
