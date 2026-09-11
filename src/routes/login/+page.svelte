@@ -122,11 +122,11 @@
 		<label class="field">
 			<span>Password</span>
 			<span class="pw">
-				<input
-					type={showPassword ? 'text' : 'password'}
-					bind:value={password}
-					autocomplete="current-password"
-				/>
+				{#if showPassword}
+					<input type="text" bind:value={password} autocomplete="current-password" />
+				{:else}
+					<input type="password" bind:value={password} autocomplete="current-password" />
+				{/if}
 				<button
 					type="button"
 					class="btn secondary toggle"

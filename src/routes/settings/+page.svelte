@@ -137,32 +137,29 @@
 
 			<label class="field">
 				<span>Current password</span>
-				<input
-					type={showPasswords ? 'text' : 'password'}
-					bind:value={currentPassword}
-					autocomplete="current-password"
-					disabled={savingPassword}
-				/>
+				{#if showPasswords}
+					<input type="text" bind:value={currentPassword} autocomplete="current-password" disabled={savingPassword} />
+				{:else}
+					<input type="password" bind:value={currentPassword} autocomplete="current-password" disabled={savingPassword} />
+				{/if}
 			</label>
 
 			<label class="field">
 				<span>New password</span>
-				<input
-					type={showPasswords ? 'text' : 'password'}
-					bind:value={newPassword}
-					autocomplete="new-password"
-					disabled={savingPassword}
-				/>
+				{#if showPasswords}
+					<input type="text" bind:value={newPassword} autocomplete="new-password" disabled={savingPassword} />
+				{:else}
+					<input type="password" bind:value={newPassword} autocomplete="new-password" disabled={savingPassword} />
+				{/if}
 			</label>
 
 			<label class="field">
 				<span>Confirm new password</span>
-				<input
-					type={showPasswords ? 'text' : 'password'}
-					bind:value={confirmPassword}
-					autocomplete="new-password"
-					disabled={savingPassword}
-				/>
+				{#if showPasswords}
+					<input type="text" bind:value={confirmPassword} autocomplete="new-password" disabled={savingPassword} />
+				{:else}
+					<input type="password" bind:value={confirmPassword} autocomplete="new-password" disabled={savingPassword} />
+				{/if}
 			</label>
 
 			<label class="check show">
