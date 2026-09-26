@@ -14,7 +14,7 @@
 // The interests they picked at signup are an explicit choice, so they outweigh
 // the subjects merely implied by their strand or course.
 
-import { DEFAULT_SUBJECTS, bookSubjects } from './subjects.js';
+import { bookSubjects, canonicalSubject } from './subjects.js';
 import { matchesYearLevel, studentLevel } from './yearLevels.js';
 import { getSubjectsForProgram, getSubjectsForDepartment } from './mappings.js';
 
@@ -54,7 +54,6 @@ const LEGACY_INTERESTS = {
     physics: 'Science'
 };
 
-const CANONICAL_SUBJECTS = new Map(DEFAULT_SUBJECTS.map((s) => [s.toLowerCase(), s]));
 
 /**
  * The student's strand or course, whichever their signup filled in.
@@ -150,7 +149,7 @@ export function interestSubjects(user) {
         const text = raw.trim().toLowerCase();
         if (!text) continue;
 
-        const subject = CANONICAL_SUBJECTS.get(text) ?? LEGACY_INTERESTS[text];
+        const subject = canonicalSubject(text) ?? LEGACY_INTERESTS[text];
         if (subject && !out.includes(subject)) out.push(subject);
     }
 
