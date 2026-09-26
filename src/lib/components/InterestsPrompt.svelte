@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	// Asks a signed-in reader for their three interests when their profile has
 	// none. Accounts are now created from the dashboard without interests, and
 	// recommendations lean on them, so the reader is asked the first time they
@@ -12,7 +13,10 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { getDocFromServer, updateDoc } from 'firebase/firestore';
 	import { session, findProfileRef } from '$lib/stores/session.js';
-	import { DEFAULT_SUBJECTS } from '$lib/services/subjects.js';
+	import { allSubjects, loadAllSubjects } from '$lib/services/subjects.js';
+
+	// Every subject from the dashboard, no status filter.
+	onMount(() => loadAllSubjects());
 	import { userInterests } from '$lib/services/users.js';
 
 	const REQUIRED_INTERESTS = 3;
@@ -145,7 +149,7 @@
 			</p>
 
 			<div class="chips">
-				{#each DEFAULT_SUBJECTS as subject}
+				{#each $allSubjects as subject}
 					<button
 						type="button"
 						class="chip"

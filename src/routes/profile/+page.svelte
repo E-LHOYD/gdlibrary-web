@@ -1,9 +1,12 @@
 <script>
 	import Icon from '$lib/components/Icon.svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { onSnapshot, updateDoc } from 'firebase/firestore';
 	import { session, findProfileRef } from '$lib/stores/session.js';
-	import { DEFAULT_SUBJECTS } from '$lib/services/subjects.js';
+	import { allSubjects, loadAllSubjects } from '$lib/services/subjects.js';
+
+	// Every subject from the dashboard, no status filter.
+	onMount(() => loadAllSubjects());
 	import { isTeacher, userInterests } from '$lib/services/users.js';
 	import { studentLevel } from '$lib/services/yearLevels.js';
 	import { openTutorial } from '$lib/stores/tutorial.js';
@@ -175,7 +178,7 @@
 
 		{#if editing}
 			<div class="chips">
-				{#each DEFAULT_SUBJECTS as subject}
+				{#each $allSubjects as subject}
 					<button
 						class="chip"
 						class:active={interests.includes(subject)}

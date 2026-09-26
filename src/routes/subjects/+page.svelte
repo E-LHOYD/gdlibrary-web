@@ -1,12 +1,13 @@
 <script>
 	import { onMount } from 'svelte';
 	import { loadBooks } from '$lib/services/books.js';
-	import { DEFAULT_SUBJECTS, hasSubject } from '$lib/services/subjects.js';
+	import { allSubjects, loadAllSubjects, hasSubject } from '$lib/services/subjects.js';
 
 	let books = [];
 	let loading = true;
 
 	onMount(async () => {
+		loadAllSubjects();
 		try {
 			books = await loadBooks();
 		} catch (error) {
@@ -30,7 +31,7 @@
 		<p class="muted">Loading…</p>
 	{:else}
 		<div class="grid">
-			{#each DEFAULT_SUBJECTS as subject}
+			{#each $allSubjects as subject}
 				<a class="tile" href="/subjects/{encodeURIComponent(subject)}">
 					<span class="name">{subject}</span>
 					<span class="muted">{countFor(subject)} books</span>
