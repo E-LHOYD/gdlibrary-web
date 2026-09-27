@@ -43,10 +43,10 @@
 				{#if book.coverUrl}
 					<img class="book-cover" src={book.coverUrl} alt="" />
 				{/if}
-				<span class="book-main">
-					<span class="book-title">{book.title}</span><br />
-					<span class="book-author">{book.author}</span>
-					{#if bookSubjects(book).length || yearLevelsLabel(book)}
+					<span class="book-main">
+						<span class="book-title">{book.title}</span><br />
+						<span class="book-author">{book.author}</span>
+						{#if bookSubjects(book).length || yearLevelsLabel(book)}
 						<span class="book-meta">
 							{[bookSubjects(book).join(', '), yearLevelsLabel(book)].filter(Boolean).join(' · ')}
 						</span>

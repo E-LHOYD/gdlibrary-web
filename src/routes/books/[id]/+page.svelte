@@ -162,6 +162,10 @@
 				<h1 class="page-title title">{book.title}</h1>
 				<p class="author">{book.author}</p>
 
+				{#if book.bookNumber}
+					<p class="muted"><strong>Book Number:</strong> {book.bookNumber}</p>
+				{/if}
+
 				{#if bookSubjects(book).length}
 					<p class="muted"><strong>Subjects:</strong> {bookSubjects(book).join(', ')}</p>
 				{/if}
