@@ -15,7 +15,7 @@ made here is the same shelf there.
 | Library | `/library` | Books recommended for the reader first, then the rest of the library |
 | Browse all | `/browse` | The plain list, with search |
 | Subjects | `/subjects`, `/subjects/[subject]` | Grouped by the dashboard's subject list |
-| Search | `/search?q=` | Book number, title or author, every term must match |
+| Search | `/search?q=` | ISBN, title or author, every term must match |
 | Book | `/books/[id]` | Cover (or the book's first page when there is none), details, shelves |
 | Reader | `/read/[id]` | pdf.js, saving progress as you scroll; bookmark any number of pages and jump back to them |
 | My shelf | `/shelf` | Reading history, Read, Viewed and up to ten of your own |

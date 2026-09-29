@@ -35,10 +35,10 @@ export async function loadBooks() {
 }
 
 /**
- * Matches on book number, title or author, case-insensitively. Every
+ * Matches on ISBN, title or author, case-insensitively. Every
  * whitespace-separated term must appear somewhere, so "growth thompson" finds a
  * book by matching one word against the title and the other against the
- * author, and "0042" finds the book numbered BK-0042.
+ * author, and "0042" finds the book with ISBN BK-0042.
  * @param {any} book
  * @param {string[]} terms
  */

@@ -163,7 +163,7 @@
 				<p class="author">{book.author}</p>
 
 				{#if book.bookNumber}
-					<p class="muted"><strong>Book Number:</strong> {book.bookNumber}</p>
+					<p class="muted"><strong>ISBN:</strong> {book.bookNumber}</p>
 				{/if}
 
 				{#if bookSubjects(book).length}

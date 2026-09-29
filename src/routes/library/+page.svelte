@@ -90,7 +90,7 @@
 
 <div class="page">
 	<form class="search" on:submit|preventDefault={submitSearch}>
-		<input type="search" placeholder="Search title, author or book number" bind:value={searchQuery} />
+		<input type="search" placeholder="Search title, author or ISBN" bind:value={searchQuery} />
 		{#if searchQuery}
 			<button type="button" class="btn secondary" on:click={() => (searchQuery = '')}>
 				<Icon name="x" />Clear

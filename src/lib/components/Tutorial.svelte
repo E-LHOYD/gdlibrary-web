@@ -40,7 +40,7 @@
 		{
 			image: searchImg,
 			title: 'Search',
-			body: 'Looking for something in particular? Type a title, an author or a book number into the search bar on the Library page.'
+			body: 'Looking for something in particular? Type a title, an author or an ISBN into the search bar on the Library page.'
 		},
 		{
 			image: subjectsImg,
